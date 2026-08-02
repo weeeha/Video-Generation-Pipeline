@@ -42,3 +42,4 @@ no corporate jargon.
 | Date | Task | Shows | Expires |
 |------|------|-------|---------|
 | 2026-08-02 | `cgt-20260803050623-4mhql` | kitchen wave + "Hi, I'm Nova" (720p fast, seed 42) | ~2026-09-01 |
+| 2026-08-02 | `cgt-20260803051357-btt59` | chained continuation: walks to counter, sips from mug (I2V from clip 1 last frame) | ~2026-09-01 |
