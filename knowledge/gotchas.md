@@ -58,6 +58,15 @@ API quirks + lessons from the PermitNav production run (June 2026). Sources:
 - **Refs pin render style as strongly as identity** (T1.5): a prompt cannot restyle a
   character against their refs — repaint the casting sheet instead (style-variant packs
   like `people/nova-watercolor`). One cast, N film looks.
+- **The negation trap (T3.2):** never name what you're removing — "remove the glowing
+  logo" produced a bigger, glowing logo. Describe the desired end state instead
+  ("the lid is completely blank brushed aluminum"). Applies to all prompting.
+- **V2V edits are loose, not surgical** — scenes regenerate close-but-not-identical.
+  Good for object swaps/content fixes; frame-exact cleanup belongs in post. And V2V
+  costs ~2× T2V (~43.4k tokens/s fast vs 21.7k/s).
+- **First+last frame pinning works as a bridge tool (T3.1)** — pin two approved frames,
+  the model generates sensible connecting action landing near both. Combine with
+  last-frame chaining for bidirectional continuity control.
 - **Native voices drift between generations** (T1.4 preliminary: Nova ≈244 Hz in one
   take, ≈184 Hz in another). For recurring characters plan an ElevenLabs dub pass in
   post; use native audio for ambience and one-off lines. (PermitNav male VO: Brian

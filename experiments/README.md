@@ -28,6 +28,7 @@ re-render at 1080p.
 | T2.1 | Sketch → video | waiting on sketch | — |
 | T2.2 | You-track (performance/composite) | waiting on footage | — |
 | T2.3 | Blender scenes | waiting on Blender open | — |
-| T3.1 | First+last match cut | running | — |
-| T3.2 | V2V retakes | running (URL fallback; asset:// needs console activation) | — |
+| T3.1 | First+last match cut | **PASS** (take 1) | 108.9k |
+| T3.2 | V2V retakes | **PASS** (take 3 — end-state recipe; V2V ≈ 2× T2V cost) | 433.8k |
+| T3.3 | Retake-rate data | 12 gens → 9 keepers + 3 instructive fails (75% first-take) | passive |
 | Capstone | 60–90s film scene | after tiers | — |
