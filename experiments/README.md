@@ -22,9 +22,9 @@ re-render at 1080p.
 |----|-----------|--------|-------|
 | T1.1 | Two characters, one shot | **PASS** (take 1) | 173.7k |
 | T1.2 | Shot / reverse-shot | **PASS** (take 2 + recipe) | 326.7k |
-| T1.3 | World change | queued | — |
-| T1.4 | Voice consistency | queued | — |
-| T1.5 | Style lock | queued | — |
+| T1.3 | World change | **PASS** (both take 1) | 217.8k |
+| T1.4 | Voice consistency | reel with Nick — prelim: voices drift | 0 |
+| T1.5 | Style lock | running | — |
 | T2.1 | Sketch → video | waiting on sketch | — |
 | T2.2 | You-track (performance/composite) | waiting on footage | — |
 | T2.3 | Blender scenes | waiting on Blender open | — |

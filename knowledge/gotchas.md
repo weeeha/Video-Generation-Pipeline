@@ -47,6 +47,14 @@ API quirks + lessons from the PermitNav production run (June 2026). Sources:
   prompt-guide "Coverage" (T1.2: passive reverse failed, explicit pass).
 - **Two-character scenes work** (T1.1: zero identity bleed, correct dialogue
   turn-taking) — at least with strongly distinct character anchors.
+- **Characters survive world changes** (T1.3: night/cold-light/wardrobe swaps hold
+  identity from 3 casting refs alone).
+- **Real brands sneak in** (T1.3: unprompted Apple logo on a laptop). Add "no visible
+  brand logos" when props invite them, or paint out in post.
+- **Native voices drift between generations** (T1.4 preliminary: Nova ≈244 Hz in one
+  take, ≈184 Hz in another). For recurring characters plan an ElevenLabs dub pass in
+  post; use native audio for ambience and one-off lines. (PermitNav male VO: Brian
+  `nPczCjzI2devNBz1zQrb`.)
 
 ## Operational details
 

@@ -45,3 +45,5 @@ no corporate jargon.
 | 2026-08-02 | `cgt-20260803051357-btt59` | chained continuation: walks to counter, sips from mug (I2V from clip 1 last frame) | ~2026-09-01 |
 | 2026-08-02 | `cgt-20260803064000-w5m4q` | two-shot with Miles, mug handoff + "Fresh pot" (T1.1 master) | ~2026-09-01 |
 | 2026-08-02 | `cgt-20260803065130-qq2vf` | reverse-angle close-up single, window wall, "Fresh pot" (T1.2) | ~2026-09-01 |
+| 2026-08-02 | `cgt-20260803065703-sclq4` | night look: charcoal coat, wet street, lamp light (T1.3) | ~2026-09-01 |
+| 2026-08-02 | `cgt-20260803065703-6sbdz` | cafe look: denim jacket, cold daylight, laptop (T1.3) | ~2026-09-01 |
