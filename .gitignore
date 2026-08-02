@@ -7,6 +7,7 @@ output/*
 
 # client state (task ids are only valid 7 days anyway)
 pipeline/state.json
+pipeline/state.lock
 
 # python / macOS noise
 __pycache__/

@@ -16,7 +16,7 @@ Commands:
 Worked examples live in the repo README. Outputs land in output/<name>.mp4 plus
 output/<name>.last.png (the chaining frame) unless --no-last-frame.
 """
-import argparse, base64, json, os, pathlib, sys, time
+import argparse, base64, fcntl, json, os, pathlib, sys, time
 
 try:
     import requests
@@ -253,8 +253,18 @@ def load_state():
     return json.loads(STATE_FILE.read_text()) if STATE_FILE.exists() else {}
 
 
-def save_state(s):
-    STATE_FILE.write_text(json.dumps(s, indent=2))
+def update_state(mutate):
+    """Atomically read-modify-write state.json. Concurrent `generate` processes
+    share this file — a plain load->save pair lets parallel runs clobber each
+    other's entries, so every write re-reads under an exclusive lock."""
+    with open(STATE_FILE.with_suffix(".lock"), "w") as lf:
+        fcntl.flock(lf, fcntl.LOCK_EX)
+        try:
+            s = load_state()
+            mutate(s)
+            STATE_FILE.write_text(json.dumps(s, indent=2))
+        finally:
+            fcntl.flock(lf, fcntl.LOCK_UN)
 
 
 def resolve_task(ref):
@@ -322,16 +332,14 @@ def cmd_generate(args):
     if name in s and s[name].get("status") not in ("failed", "cancelled", "expired"):
         die(f"name '{name}' already tracks task {s[name]['id']} — pick another, or run: seedance.py status {name}")
     tid = api_create(body)
-    s[name] = {"id": tid, "model": body["model"], "created": time.strftime("%Y-%m-%d %H:%M:%S")}
-    save_state(s)
+    rec = {"id": tid, "model": body["model"], "created": time.strftime("%Y-%m-%d %H:%M:%S")}
+    update_state(lambda s: s.__setitem__(name, rec))
     print(f"[{name}] task {tid} created")
     if args.no_wait:
         print(f"poll later with: python3 pipeline/seedance.py wait {name}")
         return
     info = wait_task(tid, name, args.interval, args.timeout)
-    s = load_state()
-    s[name]["status"] = info.get("status")
-    save_state(s)
+    update_state(lambda s: s.setdefault(name, {"id": tid}).update(status=info.get("status")))
     if finish(info, name) != "succeeded":
         sys.exit(1)
 
@@ -342,9 +350,7 @@ def cmd_status(args):
     st = info.get("status")
     if st in TERMINAL:
         if name:
-            s = load_state()
-            s[name]["status"] = st
-            save_state(s)
+            update_state(lambda s: s.setdefault(name, {"id": tid}).update(status=st))
         finish(info, name or tid)
     else:
         print(f"[{name or tid}] {st}")
@@ -354,9 +360,7 @@ def cmd_wait(args):
     tid, name = resolve_task(args.task)
     info = wait_task(tid, name or tid, args.interval, args.timeout)
     if name:
-        s = load_state()
-        s[name]["status"] = info.get("status")
-        save_state(s)
+        update_state(lambda s: s.setdefault(name, {"id": tid}).update(status=info.get("status")))
     if finish(info, name or tid) != "succeeded":
         sys.exit(1)
 
