@@ -70,6 +70,15 @@ in post — that's what the PermitNav pipeline did.
 6. `--dry-run` to inspect the request, then generate at 720p/`--fast` to iterate; 1080p full model for finals.
 7. Same `--seed` + same inputs = deterministic — pin a seed once a take is close.
 
+## Coverage: masters and reverse angles
+
+Attaching a master frame as a reference anchors composition **and camera axis** — a
+passive "reverse angle" request silently keeps the master's side (verified T1.2). To
+actually cross the axis: *"the camera has crossed to the opposite side and now shoots
+from where [X] stands"*, name what IS behind the subject now, and state the old
+background *"is NOT visible because it is behind the camera"*. Singles generated this
+way cut correctly against the master (eyelines opposing, backgrounds on correct walls).
+
 ## Common pitfalls
 
 | Symptom | Fix |

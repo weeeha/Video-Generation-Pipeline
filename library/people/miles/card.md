@@ -38,4 +38,5 @@ Low-mid male voice, unhurried, dry warmth; short sentences.
 
 | Date | Task | Shows | Expires |
 |------|------|-------|---------|
-| — | — | — | — |
+| 2026-08-02 | `cgt-20260803064000-w5m4q` | two-shot with Nova, receives mug + "You're a lifesaver" (T1.1 master) | ~2026-09-01 |
+| 2026-08-02 | `cgt-20260803064501-krll8` | close-up single, hood/fridge side, "You're a lifesaver" (T1.2) | ~2026-09-01 |

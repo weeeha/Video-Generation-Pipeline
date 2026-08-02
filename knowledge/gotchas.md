@@ -41,6 +41,12 @@ API quirks + lessons from the PermitNav production run (June 2026). Sources:
 - **Native audio is good** — ambient + a described music cue came out usable; ElevenLabs was
   only needed for precise brand VO (Seedance VO timing is roughly right, not frame-exact).
 - **Pin seeds** (`seed: 42`) once a look is close — makes retries comparable.
+- **Cost constant:** fast @720p ≈ **21.7k tokens/second**, linear (5s = 108.9k, 8s = 173.7k).
+- **Master frames anchor the camera axis.** A frame attached as a reference pins
+  composition AND side; reverse angles need explicit axis-cross language — see
+  prompt-guide "Coverage" (T1.2: passive reverse failed, explicit pass).
+- **Two-character scenes work** (T1.1: zero identity bleed, correct dialogue
+  turn-taking) — at least with strongly distinct character anchors.
 
 ## Operational details
 
