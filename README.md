@@ -1,8 +1,9 @@
 # Video Generation Pipeline
 
 Seedance 2.0 (ByteDance, via BytePlus ModelArk) video generation for Nick's projects:
-a reusable CLI client, a **people/** library for consistent characters across videos,
-and the **knowledge/** that makes prompts and API calls work on the first try.
+a reusable CLI client, a **library/** of reference packs (consistent people, places,
+motion across videos), and the **knowledge/** that makes prompts and API calls work on
+the first try.
 
 Grown out of the proven PermitNav brand-film pipeline
 ([permit-nav-team/video-generation](https://github.com/permit-nav-team/video-generation)).
@@ -14,8 +15,11 @@ knowledge/            everything we know about Seedance 2.0
   api-reference.md    full BytePlus ModelArk API contract (endpoints, params, limits)
   prompt-guide.md     how to write prompts that work (formula, modes, audio, text)
   gotchas.md          hard-won operational lessons — read before burning credits
-people/               character library for Reference-to-Video (R2V)
-  _template/          copy this folder to create a new person
+library/              reference packs for R2V — one folder per reusable element
+  people/             characters          (refs/ images + card.md)
+  places/             locations           (refs/ images + card.md)
+  motion/             camera moves / subject motion / VFX (clips as URLs in urls.txt)
+  <cat>/_template/    copy to start a new pack; new categories are just new folders
 pipeline/
   seedance.py         the client: generate / status / wait / list / cancel
   prompts/            prompt files (sent verbatim — the whole file is the prompt)
@@ -42,13 +46,13 @@ python3 pipeline/seedance.py generate --prompt "A cat batting at a ball of yarn,
 # From a prompt file, fast model, vertical
 python3 pipeline/seedance.py generate --prompt-file pipeline/prompts/example-t2v.md --fast --ratio 9:16 --name vertical-test
 
-# R2V with a person from the library (their refs attach as Image 1..N)
-python3 pipeline/seedance.py generate --prompt-file my-scene.md --person nova --name nova-cafe
+# R2V with library packs — character + location + camera move in one shot
+python3 pipeline/seedance.py generate --prompt-file my-scene.md --pack people/nova --pack places/loft --pack motion/dolly-in --name nova-loft
 
 # Chain a follow-up clip from the previous clip's last frame (same person, same scene)
-python3 pipeline/seedance.py generate --prompt "Continue from the opening frame — ..." --first-frame output/nova-cafe.last.png --name nova-cafe-2
+python3 pipeline/seedance.py generate --prompt "Continue from the opening frame — ..." --first-frame output/nova-loft.last.png --name nova-loft-2
 
-# See what would be sent without spending anything
+# See exactly what would be sent, spend nothing
 python3 pipeline/seedance.py generate --prompt "..." --dry-run
 
 # Task management
@@ -61,13 +65,14 @@ python3 pipeline/seedance.py cancel <task-id>
 Defaults: full model (`dreamina-seedance-2-0-260128`), 1080p, 16:9, 5s, native audio ON,
 last-frame capture ON (for chaining). `--fast` switches to the fast model (720p max, cheaper).
 
-## The people system (R2V)
+## The reference library (R2V)
 
-Each folder in `people/` is one character: numbered reference images in `refs/` plus a
-`card.md` with the canonical description to use in prompts. `--person <name>` attaches the
-refs in order, so `refs/01-*.png` is `Image 1` in your prompt. Full rules in
-[people/README.md](people/README.md) — including the real-human-face restriction and the
-`asset://` workaround.
+Each folder in `library/` is a **pack**: reference assets + a `card.md` with the canonical
+wording to use in prompts. `--pack people/nova` attaches nova's refs as `Image 1..N`
+(the client prints the numbering map before sending); packs compose, so person + place +
+motion in one request is one flag each. Bare names work when unambiguous (`--pack nova`).
+Full rules — pack anatomy, numbering, the real-face restriction and the `asset://`
+workaround — in [library/README.md](library/README.md).
 
 ## Costs & balance
 

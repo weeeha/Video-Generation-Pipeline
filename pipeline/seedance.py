@@ -25,12 +25,14 @@ except ImportError:
 
 REPO = pathlib.Path(__file__).resolve().parent.parent
 OUTPUT_DIR = REPO / "output"
-PEOPLE_DIR = REPO / "people"
+LIBRARY_DIR = REPO / "library"
 STATE_FILE = pathlib.Path(__file__).resolve().parent / "state.json"
 API = "https://ark.ap-southeast.bytepluses.com/api/v3"
 MODELS = {"full": "dreamina-seedance-2-0-260128", "fast": "dreamina-seedance-2-0-fast-260128"}
 TERMINAL = {"succeeded", "failed", "cancelled", "expired"}
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tiff", ".gif"}
+AUDIO_EXTS = {".mp3", ".wav"}
+VIDEO_EXTS = {".mp4", ".mov"}
 FORMATS = {"image": {"jpeg", "png", "webp", "bmp", "tiff", "gif"}, "audio": {"mp3", "wav"}}
 SIZE_CAP_MB = {"image": 30, "audio": 15}
 
@@ -101,14 +103,62 @@ def to_asset_url(ref, kind):
     return f"data:{kind}/{fmt};base64,{base64.b64encode(p.read_bytes()).decode()}"
 
 
-def person_refs(name):
-    refs = PEOPLE_DIR / name / "refs"
-    if not refs.is_dir():
-        die(f"no such person: people/{name}/refs")
-    files = sorted(p for p in refs.iterdir() if p.suffix.lower() in IMAGE_EXTS)
-    if not files:
-        die(f"people/{name}/refs has no images — add numbered refs first (see people/README.md)")
-    return files
+def resolve_pack(arg):
+    """Accept 'people/nova', 'library/people/nova', or a bare name searched across library/*/."""
+    cands = {}
+    for p in (LIBRARY_DIR / arg, REPO / arg):
+        if p.is_dir():
+            cands[p.resolve()] = p
+    if not cands and "/" not in arg:
+        for p in sorted(LIBRARY_DIR.glob(f"*/{arg}")):
+            if p.is_dir():
+                cands[p.resolve()] = p
+    packs = list(cands.values())
+    if not packs:
+        die(f"no pack '{arg}' under library/ (expected e.g. --pack people/nova; see library/README.md)")
+    if len(packs) > 1:
+        die(f"'{arg}' is ambiguous: " + ", ".join(str(p.relative_to(REPO)) for p in packs))
+    if packs[0].name == "_template":
+        die(f"{packs[0].relative_to(REPO)} is a template — copy it to a named pack first")
+    return packs[0]
+
+
+def pack_items(pack):
+    """A pack's references in attach order: refs/ files (sorted; images + audio — local
+    video is impossible, the API wants URLs), then urls.txt lines of
+    '<image|video|audio> <url-or-asset://>'."""
+    items = []
+    refs = pack / "refs"
+    if refs.is_dir():
+        for p in sorted(refs.iterdir()):
+            ext = p.suffix.lower()
+            if ext in IMAGE_EXTS:
+                items.append(("image", str(p)))
+            elif ext in AUDIO_EXTS:
+                items.append(("audio", str(p)))
+            elif ext in VIDEO_EXTS:
+                die(f"{p.name} in {pack.relative_to(REPO)}/refs: local video can't be sent "
+                    f"(API takes hosted URLs or asset:// only) — list it in urls.txt instead")
+    urls = pack / "urls.txt"
+    if urls.exists():
+        for i, raw in enumerate(urls.read_text().splitlines(), 1):
+            line = raw.strip()
+            if not line or line.startswith("#"):
+                continue
+            parts = line.split(None, 1)
+            if len(parts) != 2 or parts[0] not in ("image", "video", "audio"):
+                die(f"{urls.relative_to(REPO)} line {i}: expected '<image|video|audio> <url-or-asset://>'")
+            items.append((parts[0], parts[1].strip()))
+    if not items:
+        die(f"pack {pack.relative_to(REPO)} is empty — add refs/ files or urls.txt entries")
+    return items
+
+
+def pretty(ref):
+    try:
+        return str(pathlib.Path(ref).resolve().relative_to(REPO))
+    except (ValueError, OSError):
+        return ref
 
 
 def build_content(args, prompt):
@@ -116,22 +166,26 @@ def build_content(args, prompt):
     content = [{"type": "text", "text": prompt}]
     labels = []
 
-    ref_images = []
-    for name in args.person or []:
-        ref_images += [str(p) for p in person_refs(name)]
+    ref_images, ref_videos, ref_audios = [], [], []
+    buckets = {"image": ref_images, "video": ref_videos, "audio": ref_audios}
+    for arg in args.pack or []:
+        for kind, ref in pack_items(resolve_pack(arg)):
+            buckets[kind].append(ref)
     ref_images += list(args.image or [])
+    ref_videos += list(args.video or [])
+    ref_audios += list(args.audio or [])
 
-    if (args.first_frame or args.last_frame) and ref_images:
-        die("first/last-frame (I2V) and reference images (R2V) are mutually exclusive API scenarios")
+    if (args.first_frame or args.last_frame) and (ref_images or ref_videos or ref_audios):
+        die("first/last-frame (I2V) and references (R2V) are mutually exclusive API scenarios")
     if args.last_frame and not args.first_frame:
         die("--last-frame requires --first-frame")
     if len(ref_images) > 9:
         die(f"{len(ref_images)} reference images — the cap is 9")
-    if len(args.video or []) > 3:
+    if len(ref_videos) > 3:
         die("max 3 reference videos (combined length <= 15s)")
-    if len(args.audio or []) > 3:
+    if len(ref_audios) > 3:
         die("max 3 reference audio clips")
-    if args.audio and not (ref_images or args.video or args.first_frame):
+    if ref_audios and not (ref_images or ref_videos):
         die("audio can never be the only reference — pair it with an image or video")
 
     if args.first_frame:
@@ -142,13 +196,13 @@ def build_content(args, prompt):
         labels.append(f"last_frame  <- {args.last_frame}")
     for n, ref in enumerate(ref_images, 1):
         content.append({"type": "image_url", "image_url": {"url": to_asset_url(ref, "image")}, "role": "reference_image"})
-        labels.append(f"Image {n} <- {ref}")
-    for n, ref in enumerate(args.video or [], 1):
+        labels.append(f"Image {n} <- {pretty(ref)}")
+    for n, ref in enumerate(ref_videos, 1):
         content.append({"type": "video_url", "video_url": {"url": to_asset_url(ref, "video")}, "role": "reference_video"})
         labels.append(f"Video {n} <- {ref}")
-    for n, ref in enumerate(args.audio or [], 1):
+    for n, ref in enumerate(ref_audios, 1):
         content.append({"type": "audio_url", "audio_url": {"url": to_asset_url(ref, "audio")}, "role": "reference_audio"})
-        labels.append(f"Audio {n} <- {ref}")
+        labels.append(f"Audio {n} <- {pretty(ref)}")
 
     if len(content) - 1 > 12:
         die("more than 12 asset files in one request")
@@ -338,7 +392,7 @@ def main():
     g.add_argument("--prompt", help="prompt text inline")
     g.add_argument("--prompt-file", help="file whose entire content is the prompt")
     g.add_argument("--name", help="label used for state + output filename (default: prompt file stem)")
-    g.add_argument("--person", action="append", metavar="NAME", help="attach people/NAME/refs/* as Image 1..N (repeatable)")
+    g.add_argument("--pack", action="append", metavar="PACK", help="attach a library pack (people/nova, places/loft, or a bare name searched across library/*/): refs/ images+audio and urls.txt entries become numbered references (repeatable)")
     g.add_argument("--image", action="append", metavar="REF", help="reference image: local path, URL, or asset:// (repeatable, max 9 total)")
     g.add_argument("--video", action="append", metavar="URL", help="reference video URL or asset:// (repeatable, max 3)")
     g.add_argument("--audio", action="append", metavar="REF", help="reference audio: local path, URL, or asset:// (repeatable, max 3)")
