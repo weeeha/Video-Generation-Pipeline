@@ -1,0 +1,6 @@
+# One reference per line:  <image|video|audio> <url-or-asset://>
+# Attached after refs/ files, in this order. '#' lines are ignored.
+# Video rules: hosted URL or asset:// only (no local files), <=3 clips, <=15s combined.
+#
+# video https://example.com/dolly-in.mp4
+# video asset://abc123-from-our-own-generation

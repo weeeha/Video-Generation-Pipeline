@@ -1,0 +1,14 @@
+# secrets
+.env
+
+# generated media (URLs expire in 24h; client downloads here — curated finals can be force-added)
+output/*
+!output/.gitkeep
+
+# client state (task ids are only valid 7 days anyway)
+pipeline/state.json
+
+# python / macOS noise
+__pycache__/
+*.pyc
+.DS_Store
