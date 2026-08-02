@@ -51,6 +51,13 @@ API quirks + lessons from the PermitNav production run (June 2026). Sources:
   identity from 3 casting refs alone).
 - **Real brands sneak in** (T1.3: unprompted Apple logo on a laptop). Add "no visible
   brand logos" when props invite them, or paint out in post.
+- **`asset://` needs the Asset Service activated** on the account first — one-time
+  console toggle: <https://console.byteplus.com/ark/region:ark+ap-southeast-1/openManagement>
+  (T3.2 probe: clean 400 "has not activated the Asset Service"). Until then, re-feeding
+  own outputs requires re-hosting them at a public URL.
+- **Refs pin render style as strongly as identity** (T1.5): a prompt cannot restyle a
+  character against their refs — repaint the casting sheet instead (style-variant packs
+  like `people/nova-watercolor`). One cast, N film looks.
 - **Native voices drift between generations** (T1.4 preliminary: Nova ≈244 Hz in one
   take, ≈184 Hz in another). For recurring characters plan an ElevenLabs dub pass in
   post; use native audio for ambience and one-off lines. (PermitNav male VO: Brian

@@ -24,10 +24,10 @@ re-render at 1080p.
 | T1.2 | Shot / reverse-shot | **PASS** (take 2 + recipe) | 326.7k |
 | T1.3 | World change | **PASS** (both take 1) | 217.8k |
 | T1.4 | Voice consistency | reel with Nick — prelim: voices drift | 0 |
-| T1.5 | Style lock | running | — |
+| T1.5 | Style lock | **PASS** (cast-per-style recipe) | 326.7k |
 | T2.1 | Sketch → video | waiting on sketch | — |
 | T2.2 | You-track (performance/composite) | waiting on footage | — |
 | T2.3 | Blender scenes | waiting on Blender open | — |
-| T3.1 | First+last match cut | queued | — |
-| T3.2 | V2V retakes | queued | — |
+| T3.1 | First+last match cut | running | — |
+| T3.2 | V2V retakes | running (URL fallback; asset:// needs console activation) | — |
 | Capstone | 60–90s film scene | after tiers | — |
