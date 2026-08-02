@@ -20,8 +20,8 @@ re-render at 1080p.
 
 | ID | Experiment | Status | Spend |
 |----|-----------|--------|-------|
-| T1.1 | Two characters, one shot | running | — |
-| T1.2 | Shot / reverse-shot | queued | — |
+| T1.1 | Two characters, one shot | **PASS** (take 1) | 173.7k |
+| T1.2 | Shot / reverse-shot | running | — |
 | T1.3 | World change | queued | — |
 | T1.4 | Voice consistency | queued | — |
 | T1.5 | Style lock | queued | — |
