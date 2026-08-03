@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Seedance 2.0 — Capability Screenings</title>
+<meta name="description" content="Test sprint: can Seedance 2.0 carry a narrative film? Every clip, take and verdict from the Video Generation Pipeline capability tests.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Azeret+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#141210; --panel:#1b1815; --panel-2:#211d19; --line:#332d26;
+    --ink:#ece5d8; --ink-dim:#a89d8c; --ink-faint:#6f6759;
+    --amber:#d9a04a; --amber-hot:#f0bc6a; --pass:#9dc08a; --fail:#c97a68; --wait:#8fa3b8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"Instrument Serif",Georgia,serif; font-size:19px; line-height:1.55;
+    -webkit-font-smoothing:antialiased; overflow-x:hidden;
+  }
+  body::after{ /* film grain */
+    content:""; position:fixed; inset:-50%; z-index:99; pointer-events:none; opacity:.055;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation:grain 900ms steps(4) infinite;
+  }
+  @keyframes grain{0%{transform:translate(0,0)}25%{transform:translate(-2%,1%)}50%{transform:translate(1%,-2%)}75%{transform:translate(-1%,2%)}100%{transform:translate(2%,-1%)}}
+  .mono{font-family:"Azeret Mono",ui-monospace,monospace}
+
+  .wrap{max-width:1060px;margin:0 auto;padding:0 24px}
+
+  /* ---------- header ---------- */
+  header{padding:88px 0 56px;border-bottom:1px solid var(--line);position:relative}
+  header::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;
+    background:linear-gradient(90deg,transparent,var(--amber) 30%,var(--amber-hot) 50%,var(--amber) 70%,transparent)}
+  .eyebrow{font-family:"Azeret Mono",monospace;font-size:11px;letter-spacing:.32em;color:var(--amber);text-transform:uppercase;margin-bottom:22px}
+  h1{font-size:clamp(44px,7.5vw,84px);line-height:.98;font-weight:400;letter-spacing:-.01em}
+  h1 em{font-style:italic;color:var(--amber-hot)}
+  .lede{margin-top:22px;max-width:640px;color:var(--ink-dim);font-size:21px}
+  .lede strong{color:var(--ink);font-weight:400}
+  .header-meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:34px}
+  .chip{font-family:"Azeret Mono",monospace;font-size:11.5px;letter-spacing:.06em;color:var(--ink-dim);
+    border:1px solid var(--line);border-radius:2px;padding:7px 12px;background:var(--panel)}
+  .chip b{color:var(--amber-hot);font-weight:500}
+
+  /* ---------- slates ---------- */
+  .slate{padding:72px 0 64px;border-bottom:1px solid var(--line);opacity:0;transform:translateY(26px);
+    transition:opacity .7s ease,transform .7s ease}
+  .slate.in{opacity:1;transform:none}
+  .slate-head{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap;margin-bottom:8px;position:relative}
+  .slate-no{font-family:"Azeret Mono",monospace;font-size:12px;letter-spacing:.28em;color:var(--ink-faint)}
+  h2{font-size:clamp(30px,4.4vw,46px);font-weight:400;font-style:italic;letter-spacing:-.01em}
+  .stamp{font-family:"Azeret Mono",monospace;font-size:12px;font-weight:600;letter-spacing:.22em;
+    padding:7px 13px;border:1.6px solid;border-radius:2px;transform:rotate(-2.4deg);margin-left:auto;white-space:nowrap}
+  .stamp.pass{color:var(--pass);border-color:var(--pass)}
+  .stamp.recipe{color:var(--amber-hot);border-color:var(--amber-hot)}
+  .stamp.drift{color:var(--fail);border-color:var(--fail)}
+  .slate-sub{font-family:"Azeret Mono",monospace;font-size:12px;color:var(--ink-faint);letter-spacing:.08em;margin-bottom:28px}
+  .watch{max-width:680px;color:var(--ink-dim);margin:26px 0 0}
+  .watch strong{color:var(--ink);font-weight:400}
+  .watch em{color:var(--amber-hot)}
+
+  .media{display:grid;gap:14px;margin-top:6px}
+  .media.cols-2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+  .media.cols-3{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+  figure{background:var(--panel);border:1px solid var(--line);border-radius:3px;overflow:hidden}
+  video,figure img{display:block;width:100%;height:auto}
+  audio{width:100%;margin-top:4px;filter:sepia(.3) saturate(.8)}
+  figcaption{font-family:"Azeret Mono",monospace;font-size:11px;letter-spacing:.1em;color:var(--ink-faint);
+    padding:9px 12px;border-top:1px solid var(--line);text-transform:uppercase}
+  figcaption b{color:var(--ink-dim);font-weight:500}
+  figure.flag figcaption{color:var(--fail)}
+
+  /* ---------- table ---------- */
+  .matrix{padding:80px 0 30px}
+  .matrix h2{margin-bottom:6px}
+  .matrix .slate-sub{margin-bottom:26px}
+  .table-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:3px;background:var(--panel)}
+  table{width:100%;border-collapse:collapse;font-family:"Azeret Mono",monospace;font-size:12.5px;min-width:820px}
+  th{color:var(--amber);text-transform:uppercase;font-size:10.5px;letter-spacing:.18em;font-weight:500;
+    text-align:left;padding:13px 14px;border-bottom:1px solid var(--line);background:var(--panel-2)}
+  td{padding:12px 14px;border-bottom:1px solid var(--line);color:var(--ink-dim);vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  td.id{color:var(--ink-faint);white-space:nowrap}
+  td.name{color:var(--ink)}
+  .v{font-weight:600;letter-spacing:.1em;white-space:nowrap}
+  .v.pass{color:var(--pass)} .v.recipe{color:var(--amber-hot)} .v.drift{color:var(--fail)} .v.wait{color:var(--wait)}
+
+  /* ---------- cost + footer ---------- */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:36px 0 0}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:22px 20px}
+  .stat .n{font-family:"Azeret Mono",monospace;font-size:30px;color:var(--amber-hot);font-weight:300}
+  .stat .l{font-family:"Azeret Mono",monospace;font-size:10.5px;letter-spacing:.2em;color:var(--ink-faint);text-transform:uppercase;margin-top:8px}
+  footer{padding:64px 0 80px;color:var(--ink-faint);font-size:16px}
+  footer .rule{height:1px;background:var(--line);margin-bottom:36px}
+  footer a{color:var(--amber);text-decoration:none;border-bottom:1px solid rgba(217,160,74,.35)}
+  footer a:hover{color:var(--amber-hot)}
+  footer .mono{font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-top:14px}
+
+  @media (max-width:640px){
+    .stamp{margin-left:0}
+    header{padding:64px 0 44px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">Video Generation Pipeline · Test Sprint · 2026-08-02</div>
+    <h1>The Seedance<br><em>Screenings</em></h1>
+    <p class="lede">Can ByteDance's <strong>Seedance&nbsp;2.0</strong> carry a narrative film — consistent characters, cut-together coverage, one look across every shot? We tested each capability in isolation, on purpose, with money on the clock. <strong>These are the actual takes.</strong></p>
+    <div class="header-meta">
+      <span class="chip">MODEL <b>dreamina-seedance-2.0-fast · 720p</b></span>
+      <span class="chip">GENERATIONS <b>12</b></span>
+      <span class="chip">FIRST-TAKE KEEPERS <b>75%</b></span>
+      <span class="chip">SPRINT SPEND <b>≈1.59M tokens</b></span>
+    </div>
+  </div>
+</header>
+
+<!-- 00 CASTING -->
+<section class="slate">
+  <div class="wrap">
+    <div class="slate-head"><span class="slate-no">SLATE 00</span><h2>The Cast</h2><span class="stamp pass">FOUNDATION</span></div>
+    <div class="slate-sub">two characters · three-panel sheets · single-image generation = built-in consistency</div>
+    <div class="media cols-2">
+      <figure><img src="assets/sheet-nova.png" alt="Nova casting sheet" loading="lazy"><figcaption><b>NOVA</b> — early-30s everywoman · 3 refs cropped from one sheet</figcaption></figure>
+      <figure><img src="assets/sheet-miles.png" alt="Miles casting sheet" loading="lazy"><figcaption><b>MILES</b> — glasses + beard as identity anchors</figcaption></figure>
+    </div>
+    <p class="watch">Each sheet is generated as <strong>one image with three panels</strong>, so the three views can't drift apart — then cropped into numbered reference images the API consumes. The whole cast costs a few cents of image generation before a single video token is spent.</p>
+  </div>
+</section>
+
+<!-- 01 SCREEN TEST -->
+<section class="slate">
+  <div class="wrap">
+    <div class="slate-head"><span class="slate-no">SLATE 01</span><h2>Screen Test</h2><span class="stamp pass">PASS · TAKE 1</span></div>
+    <div class="slate-sub">R2V, 3 reference images · 5s · native audio · 108,900 tokens</div>
+    <div class="media"><figure><video controls playsinline preload="metadata" poster="assets/posters/nova-cast-test.jpg"><source src="videos/nova-cast-test.mp4" type="video/mp4"></video><figcaption>NOVA-CAST-TEST — "Hi, I'm Nova."</figcaption></figure></div>
+    <p class="watch"><strong>Watch for:</strong> the sweater's cable pattern surviving from the casting sheet, and the spoken line — <em>video and audio are generated together in one pass.</em></p>
+  </div>
+</section>
+
+<!-- 02 CONTINUATION -->
+<section class="slate">
+  <div class="wrap">
+    <div class="slate-head"><span class="slate-no">SLATE 02</span><h2>Continuation</h2><span class="stamp pass">PASS · TAKE 1</span></div>
+    <div class="slate-sub">I2V last-frame chaining · clip 2 opens exactly where clip 1 ended</div>
+    <div class="media">
+      <figure><video controls playsinline preload="metadata" poster="assets/posters/nova-cast-test-2.jpg"><source src="videos/nova-cast-test-2.mp4" type="video/mp4"></video><figcaption>NOVA-CAST-TEST-2 — chained from clip 1's final frame</figcaption></figure>
+      <figure><img src="assets/strip-chain.png" alt="Continuity strip" loading="lazy"><figcaption>CLIP 1 END · CLIP 2 START · CLIP 2 MID — the seam is invisible</figcaption></figure>
+    </div>
+    <p class="watch"><strong>Watch for:</strong> the first frame — it <em>is</em> the previous clip's last frame. Same person, same kitchen, new action. This is how scenes get longer than one generation.</p>
+  </div>
+</section>
+
+<!-- 03 TWO-HANDER -->
+<section class="slate">
+  <div class="wrap">
+    <div class="slate-head"><span class="slate-no">SLATE 03</span><h2>The Two-Hander</h2><span class="stamp pass">PASS · TAKE 1</span></div>
+    <div class="slate-sub">T1.1 · 8 of 9 reference slots (two people + the kitchen) · scripted dialogue · 8s</div>
+    <div class="media"><figure><video controls playsinline preload="metadata" poster="assets/posters/t1-1-two-shot-t1.jpg"><source src="videos/t1-1-two-shot-t1.mp4" type="video/mp4"></video><figcaption>T1-1 — "Fresh pot." / "You're a lifesaver."</figcaption></figure></div>
+    <p class="watch"><strong>The risk was identity bleed</strong> — two referenced faces averaging into each other. It didn't happen: his glasses and beard, her face and hair, both locked for all eight seconds. Dialogue turn-taking came out in the right order with natural pacing (whisper-verified).</p>
+  </div>
+</section>
+
+<!-- 04 COVERAGE -->
+<section class="slate">
+  <div class="wrap">
+    <div class="slate-head"><span class="slate-no">SLATE 04</span><h2>Coverage</h2><span class="stamp recipe">PASS · RECIPE FOUND</span></div>
+    <div class="slate-sub">T1.2 · shot / reverse-shot from a master frame · the backbone of every dialogue scene</div>
+    <div class="media">
+      <figure><video controls playsinline preload="metadata" poster="assets/posters/t1-2-scene-cut.jpg"><source src="videos/t1-2-scene-cut.mp4" type="video/mp4"></video><figcaption>T1-2 SCENE CUT — her single → his single → two-shot · 3 setups, one scene</figcaption></figure>
+      <figure><img src="assets/strip-coverage.png" alt="Coverage strip" loading="lazy"><figcaption>MASTER · HER SINGLE (REVERSE) · HIS SINGLE — opposing eyelines, correct walls</figcaption></figure>
+    </div>
+    <p class="watch"><strong>The capability limit we found:</strong> a master frame attached as reference anchors the <em>camera axis</em> — take 1's "reverse angle" silently kept the master's side of the room. The fix that became a recipe: say <em>"the camera has crossed to the opposite side"</em> and name what's now behind the subject <em>and</em> what "is NOT visible because it is behind the camera." Take 2 cut correctly.</p>
+  </div>
+</section>
+
+<!-- 05 WORLD CHANGE -->
+<section class="slate">
+  <div class="wrap">
+    <div class="slate-head"><span class="slate-no">SLATE 05</span><h2>World Change</h2><span class="stamp pass">PASS · TAKES 1</span></div>
+    <div class="slate-sub">T1.3 · no location pack, hostile palettes, new wardrobe · identity from 3 refs alone</div>
+    <div class="media cols-2">
+      <figure><video controls playsinline preload="metadata" poster="assets/posters/t1-3-night-t1.jpg"><source src="videos/t1-3-night-t1.mp4" type="video/mp4"></video><figcaption>NIGHT — charcoal coat, wet street, lamp light</figcaption></figure>
+      <figure><video controls playsinline preload="metadata" poster="assets/posters/t1-3-cafe-t1.jpg"><source src="videos/t1-3-cafe-t1.mp4" type="video/mp4"></video><figcaption>COLD CAFE — denim, grey daylight, rain</figcaption></figure>
+    </div>
+    <div class="media" style="margin-top:14px"><figure><img src="assets/strip-worldchange.png" alt="World change strip" loading="lazy"><figcaption>CASTING REF · NIGHT · CAFE — same woman everywhere</figcaption></figure></div>
+    <p class="watch"><strong>Films have more than one location.</strong> Verdict: three casting refs carry a character into any palette, time of day or wardrobe. (Bonus find: an unprompted Apple logo appeared on her laptop — brands sneak in; see Slate 09 for how it left.)</p>
+  </div>
+</section>
+
+<!-- 06 VOICE -->
+<section class="slate">
+  <div class="wrap">
+    <div class="slate-head"><span class="slate-no">SLATE 06</span><h2>The Voice Problem</h2><span class="stamp drift">VOICES DRIFT</span></div>
+    <div class="slate-sub">T1.4 · zero new tokens — same characters across separately generated shots</div>
+    <div class="media"><figure style="padding:18px 16px 12px"><audio controls preload="metadata" src="audio/t1-4-voice-comparison.m4a"></audio><figcaption style="border-top:none;padding-top:10px">NOVA ×3 TAKES · THEN MILES ×2 — same person to your ear?</figcaption></figure></div>
+    <p class="watch">Pitch analysis puts Nova at <em>~244&nbsp;Hz</em> in one generation and <em>~184&nbsp;Hz</em> in another — different voices for the same face. <strong>Production strategy:</strong> native audio for ambience, room tone and one-off lines; a consistent dub (ElevenLabs) for recurring-character dialogue.</p>
+  </div>
+</section>
+
+<!-- 07 STYLE LOCK -->
+<section class="slate">
+  <div class="wrap">
+    <div class="slate-head"><span class="slate-no">SLATE 07</span><h2>Style Lock</h2><span class="stamp recipe">PASS · RECIPE FOUND</span></div>
+    <div class="slate-sub">T1.5 · one watercolor-storybook style block across different content — and one character who refused it</div>
+    <div class="media cols-3">
+      <figure><video controls playsinline preload="metadata" poster="assets/posters/t1-5-harbor-t1.jpg"><source src="videos/t1-5-harbor-t1.mp4" type="video/mp4"></video><figcaption>HARBOR — style from words alone</figcaption></figure>
+      <figure class="flag"><video controls playsinline preload="metadata" poster="assets/posters/t1-5-alley-t1.jpg"><source src="videos/t1-5-alley-t1.mp4" type="video/mp4"></video><figcaption>TAKE 1 — world painted, NOVA STAYED 3D</figcaption></figure>
+      <figure><video controls playsinline preload="metadata" poster="assets/posters/t1-5-alley-t2.jpg"><source src="videos/t1-5-alley-t2.mp4" type="video/mp4"></video><figcaption>TAKE 2 — repainted casting refs · fully in-style</figcaption></figure>
+    </div>
+    <div class="media" style="margin-top:14px"><figure><img src="assets/sheet-nova-watercolor.png" alt="Nova watercolor casting sheet" loading="lazy"><figcaption>THE FIX — the same casting sheet, repainted once · a style-variant pack</figcaption></figure></div>
+    <p class="watch"><strong>Reference images pin render style as strongly as identity</strong> — no prompt could watercolor a 3D-cast character. The recipe: repaint the casting sheet (one free image edit), crop a style-variant pack, done. <em>One cast, any number of film looks.</em></p>
+  </div>
+</section>
+
+<!-- 08 BRIDGE -->
+<section class="slate">
+  <div class="wrap">
+    <div class="slate-head"><span class="slate-no">SLATE 08</span><h2>The Bridge</h2><span class="stamp pass">PASS · TAKE 1</span></div>
+    <div class="slate-sub">T3.1 · first AND last frame pinned from two different existing clips · the model invents the connection</div>
+    <div class="media">
+      <figure><video controls playsinline preload="metadata" poster="assets/posters/t3-1-inbetween-t1.jpg"><source src="videos/t3-1-inbetween-t1.mp4" type="video/mp4"></video><figcaption>T3-1 — generated action connecting two approved frames</figcaption></figure>
+      <figure><img src="assets/strip-bridge.png" alt="Bridge strip" loading="lazy"><figcaption>PIN A · CLIP START · MID · CLIP END · PIN B</figcaption></figure>
+    </div>
+    <p class="watch"><strong>Any two approved frames can now be connected</strong> — ends of takes, Blender renders, restyled stills. Combined with chaining (Slate 02), continuity works in both directions.</p>
+  </div>
+</section>
+
+<!-- 09 V2V -->
+<section class="slate">
+  <div class="wrap">
+    <div class="slate-head"><span class="slate-no">SLATE 09</span><h2>Surgical Retake</h2><span class="stamp recipe">PASS · RECIPE FOUND</span></div>
+    <div class="slate-sub">T3.2 · video-to-video edit: evict the stray Apple logo from Slate 05's cafe · V2V costs 2× normal</div>
+    <div class="media">
+      <figure><img src="assets/strip-v2v.png" alt="V2V three-way comparison" loading="lazy"><figcaption>ORIGINAL · "REMOVE THE GLOWING LOGO" (IT GLOWED) · END-STATE PHRASING (CLEAN)</figcaption></figure>
+      <figure><video controls playsinline preload="metadata" poster="assets/posters/t3-2-logo-removal-t3.jpg"><source src="videos/t3-2-logo-removal-t3.mp4" type="video/mp4"></video><figcaption>T3-2 TAKE 3 — blank lid, scene preserved</figcaption></figure>
+    </div>
+    <p class="watch"><strong>The negation trap, caught on film:</strong> asked to <em>"remove the glowing logo"</em>, the model made the logo bigger — and glowing. Naming a thing renders it. The recipe that works: describe the end state — <em>"the lid is completely blank brushed aluminum."</em> Applies to every prompt you'll ever write.</p>
+  </div>
+</section>
+
+<!-- MATRIX -->
+<section class="matrix">
+  <div class="wrap">
+    <div class="slate-head"><span class="slate-no">THE RECORD</span><h2>Full Test Matrix</h2></div>
+    <div class="slate-sub">tiers 1 + 3 complete · tier 2 waits on live inputs (sketch, performance footage, Blender) · capstone scene follows</div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>ID</th><th>Test</th><th>Verdict</th><th>Takes</th><th>Tokens</th><th>What it established</th></tr></thead>
+        <tbody>
+          <tr><td class="id">—</td><td class="name">Casting + screen test + chaining</td><td class="v pass">PASS</td><td>2/2</td><td>217.8k</td><td>R2V identity from 3 refs; last-frame chaining; native audio</td></tr>
+          <tr><td class="id">T1.1</td><td class="name">Two characters, one shot</td><td class="v pass">PASS</td><td>1/1</td><td>173.7k</td><td>zero identity bleed; correct dialogue turn-taking</td></tr>
+          <tr><td class="id">T1.2</td><td class="name">Shot / reverse-shot</td><td class="v recipe">PASS·R</td><td>3/2</td><td>326.7k</td><td>masters anchor camera axis → explicit axis-cross language</td></tr>
+          <tr><td class="id">T1.3</td><td class="name">Character survives world change</td><td class="v pass">PASS</td><td>2/2</td><td>217.8k</td><td>identity portable across palette / wardrobe / location</td></tr>
+          <tr><td class="id">T1.4</td><td class="name">Voice consistency</td><td class="v drift">DRIFT</td><td>0 new</td><td>0</td><td>native voices vary per generation → dub recurring dialogue in post</td></tr>
+          <tr><td class="id">T1.5</td><td class="name">Style lock across shots</td><td class="v recipe">PASS·R</td><td>3/2</td><td>326.7k</td><td>refs pin style → cast-per-film-style variant packs</td></tr>
+          <tr><td class="id">T3.1</td><td class="name">First+last frame bridge</td><td class="v pass">PASS</td><td>1/1</td><td>108.9k</td><td>pin two frames, generate the connecting action</td></tr>
+          <tr><td class="id">T3.2</td><td class="name">V2V surgical retakes</td><td class="v recipe">PASS·R</td><td>2/1</td><td>433.8k</td><td>end-state phrasing (never name the removal); V2V ≈ 2× cost</td></tr>
+          <tr><td class="id">T3.3</td><td class="name">Retake-rate logging</td><td class="v pass">DATA</td><td>12 gens</td><td>passive</td><td>75% first-take · 1.33 generations per keeper</td></tr>
+          <tr><td class="id">T2.1</td><td class="name">Sketch → image → video</td><td class="v wait">WAITING</td><td>—</td><td>~500k est</td><td>needs: a hand sketch</td></tr>
+          <tr><td class="id">T2.2</td><td class="name">Human performance reference</td><td class="v wait">WAITING</td><td>—</td><td>~650k est</td><td>needs: performance footage (+ green-screen composite route)</td></tr>
+          <tr><td class="id">T2.3</td><td class="name">Blender scene consistency</td><td class="v wait">WAITING</td><td>—</td><td>~600k est</td><td>needs: Blender open with MCP addon</td></tr>
+          <tr><td class="id">CAP</td><td class="name">Capstone: 60–90s dialogue scene</td><td class="v wait">QUEUED</td><td>—</td><td>~2M est</td><td>integration test — everything above in one cut sequence</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="n">21.7k</div><div class="l">tokens / second · fast 720p</div></div>
+      <div class="stat"><div class="n">2×</div><div class="l">V2V edit cost vs generation</div></div>
+      <div class="stat"><div class="n">75%</div><div class="l">first-take keeper rate</div></div>
+      <div class="stat"><div class="n">≈1.7M</div><div class="l">tokens per finished minute</div></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="rule"></div>
+    <p>Every take above is real output, including the failures — the failures are where the recipes come from. Full request bodies, findings and the knowledge base live in the <a href="https://github.com/weeeha/Video-Generation-Pipeline" rel="noopener">Video-Generation-Pipeline</a> repo.</p>
+    <p class="mono">SEEDANCE 2.0 · BYTEPLUS MODELARK · TEST SPRINT 2026-08-02 · A HUMAN DECIDED EVERY SHOT</p>
+  </div>
+</footer>
+
+<script>
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+  }), { threshold: 0.12 });
+  document.querySelectorAll('.slate').forEach(s => io.observe(s));
+  document.addEventListener('play', e => {
+    document.querySelectorAll('video,audio').forEach(m => { if (m !== e.target) m.pause(); });
+  }, true);
+</script>
+</body>
+</html>

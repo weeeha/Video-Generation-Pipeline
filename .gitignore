@@ -13,3 +13,7 @@ pipeline/state.lock
 __pycache__/
 *.pyc
 .DS_Store
+
+# vercel local artifacts
+web/.vercel/
+web/.env.local
