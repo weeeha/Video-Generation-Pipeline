@@ -10,9 +10,11 @@ API quirks + lessons from the PermitNav production run (June 2026). Sources:
 - **Task IDs live 7 days.** The List endpoint also only sees the past 7 days.
 - **No balance API.** Balance is console-only: <https://console.byteplus.com/finance>.
 - **`flex` (50% price) tier is NOT available on 2.0/2.0-fast** — `default` pricing only.
-- One 720p clip ≈ ~109k completion tokens (order of magnitude for budgeting).
-- Iterate on `--fast` at 720p; render finals on the full model. Same seed + same inputs is
-  deterministic, so a good fast take can guide the final.
+- **Seedance 2.5 costs ≈ +50% over 2.0** and has an **activation gate**: balance > USD 30,
+  an AI Savings Plan ≥ the USD 30 tier, or a 2.5 resource pack — otherwise creates fail.
+- One 720p clip ≈ ~109k completion tokens (order of magnitude for budgeting; 2.0 numbers).
+- Iterate on `--fast` (or `--model mini`) at 720p; render finals on 2.5. Same seed + same
+  inputs is deterministic, so a good fast take can guide the final.
 
 ## Hard restrictions
 
@@ -20,15 +22,24 @@ API quirks + lessons from the PermitNav production run (June 2026). Sources:
   rejected. Workarounds: the console's digital-character library, authorized real-person
   assets (verification required), or **trusted prior outputs** — face-containing videos YOUR
   account generated in the last 30 days can be re-fed via `asset://<ID>`.
-- **Audio can never be the only reference** — pair it with an image or video.
+- **Audio can never be the only reference on the 2.0 series** — pair it with an image or
+  video. (2.5 allows audio-only references.)
 - **Mode mutual exclusion:** `first_frame`/`last_frame` (I2V) and `reference_image` (R2V)
   cannot coexist in one request.
 - **2.0/2.0-fast do NOT support:** `frames` (use `duration` 4–15 or `auto`), `camera_fixed`,
   `draft` mode (1.5-pro only), `flex` tier. **2.0-fast has no 1080p.**
 - **Base64 never for video**; for images it's fine but keep the request body under 64MB
   (per-file caps: image 30MB, video 50MB, audio 15MB).
-- Asset dimensions: images/videos 300–6000px per side, aspect between 0.4 and 2.5;
-  video clips 2–15s each, ≤3 clips, ≤15s combined.
+- Asset dimensions: images/videos 300–6000px per side, aspect between 0.4 and 2.5.
+  Video clips: 2.0 → 2–15s each, ≤3 clips, ≤15s combined; 2.5 → 4–30s each (edit sources
+  must be 4–30s), ≤10 clips, ≤30s combined.
+- **2.5 task constraints bite.** Edit/extend/first-frame tasks require `ratio: adaptive`
+  (edit also `duration: -1`), and edit/extend prompts MUST contain intent keywords
+  ("edit/add/remove/replace", "extend/continue") or the task fails async with
+  `InvalidParameter.TaskTypeMismatch` / `.TaskTypeConstraint`. `seedance.py` enforces the
+  parameter side client-side; the keywords are on you.
+- **2.5 1080p output is 10-bit H.265/HEVC** — some players/pipelines can't read it. VLC,
+  mpv, QuickTime work; use 720p (or `--format mov`) when compatibility matters.
 
 ## Production lessons (PermitNav run)
 

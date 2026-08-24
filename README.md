@@ -1,6 +1,6 @@
 # Video Generation Pipeline
 
-Seedance 2.0 (ByteDance, via BytePlus ModelArk) video generation for Nick's projects:
+Seedance 2.5 / 2.0 (ByteDance, via BytePlus ModelArk) video generation for Nick's projects:
 a reusable CLI client, a **library/** of reference packs (consistent people, places,
 motion across videos), and the **knowledge/** that makes prompts and API calls work on
 the first try.
@@ -11,7 +11,7 @@ Grown out of the proven PermitNav brand-film pipeline
 ## Layout
 
 ```
-knowledge/            everything we know about Seedance 2.0
+knowledge/            everything we know about Seedance 2.5 / 2.0
   api-reference.md    full BytePlus ModelArk API contract (endpoints, params, limits)
   prompt-guide.md     how to write prompts that work (formula, modes, audio, text)
   gotchas.md          hard-won operational lessons — read before burning credits
@@ -62,8 +62,12 @@ python3 pipeline/seedance.py wait   <task-id or name>
 python3 pipeline/seedance.py cancel <task-id>
 ```
 
-Defaults: full model (`dreamina-seedance-2-0-260128`), 1080p, 16:9, 5s, native audio ON,
-last-frame capture ON (for chaining). `--fast` switches to the fast model (720p max, cheaper).
+Defaults: Seedance 2.5 (`dreamina-seedance-2-5-260628`), 1080p (10-bit HEVC on 2.5), 16:9,
+5s, native audio ON, last-frame capture ON (for chaining). `--model 2.0|fast|mini` selects
+the 2.0 series (`--fast` = shorthand for the fast model, 720p max, cheaper). 2.5 extras:
+`--duration` up to 30s, `--task-type auto|edit|extend`, `--format mov`, audio-only
+references, up to 30 images + 10 videos + 10 audio per request. Edit/extend/first-frame
+tasks on 2.5 require `ratio: adaptive` — the client sets and enforces this for you.
 
 ## The reference library (R2V)
 
@@ -80,4 +84,6 @@ workaround — in [library/README.md](library/README.md).
   <https://console.byteplus.com/finance> (BytePlus account, region ap-southeast-1).
 - Order of magnitude: one 720p 16:9 clip ≈ ~109k completion tokens (from the official docs).
   `seedance.py` prints `usage.completion_tokens` after every successful task.
-- `--dry-run` before spending; `--fast` while iterating; 1080p full model only for finals.
+- `--dry-run` before spending; iterate on `--fast` or `--model mini` at 720p; 2.5 1080p for
+  finals. 2.5 costs ≈ +50% over 2.0 and needs the account gate (balance > USD 30, a savings
+  plan, or a 2.5 resource pack) — see knowledge/gotchas.md.
