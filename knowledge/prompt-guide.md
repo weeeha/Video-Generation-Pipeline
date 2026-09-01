@@ -1,4 +1,4 @@
-# Seedance 2.0 — Prompt Guide
+# Seedance — Prompt Guide (2.5 / 2.0)
 
 Seedance reads prompts as **natural language**, not keyword salads. Write the way you'd
 brief a director: who, what, where, how it sounds. (Official templates verbatim:
@@ -22,7 +22,7 @@ palette. Vague mood words alone produce generic output; concrete film vocabulary
 | **T2V** | text only | anything from scratch |
 | **I2V** | text + first frame (± last frame) | animating a still; **chaining clips** (feed the previous clip's last frame — keeps person + location) |
 | **R2V** | text + reference images/videos/audio | **consistent characters** (our `people/` system), products, motion/camera/VFX borrowing |
-| **V2V** | text + video(s) | add/remove/modify elements, extend forward/back, stitch ≤3 clips (≤15s total) |
+| **V2V** | text + video(s) | add/remove/modify elements, extend forward/back, stitch clips (2.0: ≤3 clips/15s · 2.5: ≤10 clips/30s) |
 
 I2V first-frame and R2V reference images are **mutually exclusive** in one request.
 
@@ -30,7 +30,14 @@ I2V first-frame and R2V reference images are **mutually exclusive** in one reque
 
 Assets are referenced by **type + upload order**: `Image 1`, `Image 2`, `Video 1`, `Audio 1`.
 Numbering counts only items of that type, in `content[]` order — so **upload in the order
-you'll reference**.
+you'll reference**. Seedance 2.5's official examples use an `@` prefix (`@Image1`,
+`@Video 1`) — same ordinals, either style works, stay consistent within a prompt.
+
+**2.5 intent keywords are load-bearing.** On 2.5, an edit task's prompt must contain an
+editing phrase ("edit the video", "add", "delete/remove", "modify/replace/change") and an
+extension task's prompt must contain an extension phrase ("extend forward/backward",
+"continue", "continue the story") — the model classifies the task from these words, and a
+mismatch with `omni_reference_task_type` fails the task (gotchas.md).
 
 Two rules that make or break R2V:
 

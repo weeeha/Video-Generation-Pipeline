@@ -1,6 +1,6 @@
-# Seedance 2.0 (BytePlus ModelArk) — API Reference
+# Seedance 2.5 / 2.0 (BytePlus ModelArk) — API Reference
 
-This is a consolidated developer reference for the **Dreamina Seedance 2.0 series** video-generation models on **BytePlus ModelArk**. It covers the four task endpoints, asset rules, generation modes, prompt templates, joint audio generation, output handling, code samples, and known gotchas. Sources: ModelArk docs pages 1520757 (Create), 1521309 (Retrieve), 2291680 (Tutorial), 2222480 (Prompt guide).
+This is a consolidated developer reference for the **Dreamina Seedance 2.5 and 2.0 series** video-generation models on **BytePlus ModelArk**. It covers the four task endpoints, asset rules, generation modes, prompt templates, joint audio generation, output handling, code samples, and known gotchas. Sources: ModelArk docs pages 1520757 (Create), 1521309 (Retrieve), 2291680 (2.0 Tutorial), 2222480 (2.0 Prompt guide), 2607688 (2.5 Tutorial), 2607689 (2.5 Prompt guide).
 
 ---
 
@@ -12,8 +12,10 @@ The Seedance 2.0 series is a multimodal video-generation model family that can p
 
 | Model | Model ID | Notes |
 | --- | --- | --- |
-| Dreamina Seedance 2.0 | `dreamina-seedance-2-0-260128` | Full model. Supports 480p / 720p / 1080p. |
+| **Dreamina Seedance 2.5** | `dreamina-seedance-2-5-260628` | Flagship (launched 2026-07-31). 480p / 720p / 1080p — 1080p is **10-bit + H.265/HEVC**; **no 4k**. 30 s max, 50 refs, audio-only refs, explicit task types, `output_format: mov`. ~50% pricier than 2.0. Activation gate: account balance > USD 30, AI Savings Plan ≥ USD 30 tier, or a 2.5 resource pack. |
+| Dreamina Seedance 2.0 | `dreamina-seedance-2-0-260128` | Full 2.0. 480p / 720p / 1080p / **4k (10-bit)**. |
 | Dreamina Seedance 2.0 Fast | `dreamina-seedance-2-0-fast-260128` | Faster / cheaper. **No 1080p.** |
+| Dreamina Seedance 2.0 Mini | `dreamina-seedance-2-0-mini-260615` | Cheapest 2.0. **No 1080p.** |
 
 Other Seedance models referenced in the same docs (legacy / for context): `seedance-1-0-pro`, `seedance-1-0-pro-fast`, `seedance-1-0-lite-i2v`, `seedance-1-0-lite-t2v`, `seedance-1-5-pro` (the only one supporting **draft mode**). This reference focuses on **2.0 series**.
 
@@ -25,6 +27,17 @@ Other Seedance models referenced in the same docs (legacy / for context): `seeda
 - Video editing: add / remove / modify elements; extend forward / backward; track-completion (stitching).
 - Prompt languages: English (all models) and Chinese (Seedance 2.0 / 2.0 Fast). Other languages partially supported via dialogue/subtitle text in prompts.
 - Real-human-face uploads are **blocked** — see `Trusted outputs as input assets` workaround in §4.
+
+**Seedance 2.5 deltas** (everything above, plus):
+
+- Output duration up to **30 s** in one pass (2.0: 15 s); `duration` range [4, 30] or `-1` (auto).
+- Up to **50 reference assets**: 30 images + 10 videos + 10 audio (2.0: 9 + 3 + 3, 12 files); combined reference video/audio duration ≤ **30 s** (2.0: 15 s).
+- **Audio-only references allowed** (2.0 requires an image/video alongside audio).
+- **Explicit task typing** via `omni_reference_task_type` (`auto` / `edit` / `extend`) with hard parameter constraints and synchronous validation — see §3.1.5.
+- **`output_format`**: `mp4` (default) or `mov` (H.264 + yuv444p + PCM — better color fidelity, recommended for edit/extend).
+- 1080p output is **10-bit + H.265/HEVC** (use VLC / mpv / QuickTime if playback fails). No 4k on 2.5.
+- Native multilingual prompts + audio: Chinese, English, Spanish, Indonesian, Malay, Thai, Arabic, Portuguese, Vietnamese, Japanese, Korean.
+- Official 2.5 examples reference assets as `@Image1` / `@Video 1` (2.0 docs used `[Image N]`) — same 1-based ordinals, keep one style per prompt.
 
 ---
 
@@ -64,9 +77,11 @@ Returns immediately with `{ "id": "cgt-..." }`. The task ID is retained for **7 
 | `model` | string | yes | — | Model ID (e.g. `dreamina-seedance-2-0-260128`) or an endpoint ID. |
 | `content` | object[] | yes | — | Array of input items (text / image / video / audio / draft\_task). Combinations below. |
 | `generate_audio` | boolean | no | `true` (2.0/2.0-fast/1.5-pro) | `true` = video output has synchronized audio. `false` = silent. |
-| `resolution` | string | no | `720p` (2.0/2.0-fast/1.5-pro/1.0-lite); `1080p` (1.0-pro/pro-fast) | `480p`, `720p`, `1080p`. **2.0-fast does not support 1080p.** |
-| `ratio` | string | no | `adaptive` (2.0/2.0-fast/1.5-pro) | `16:9`, `4:3`, `1:1`, `3:4`, `9:16`, `21:9`, `adaptive`. |
-| `duration` | integer | no | `5` | Seconds. **2.0/2.0-fast: [4, 15]** (or set to `auto` for smart selection). 1.0-pro/pro-fast/lite: [2, 12]. 1.5-pro: [4, 12]. |
+| `resolution` | string | no | `720p` (2.5/2.0 series/1.5-pro/1.0-lite); `1080p` (1.0-pro/pro-fast) | `480p`, `720p`, `1080p`, `4k` (**4k: 2.0 full only**). **2.0-fast / 2.0-mini do not support 1080p.** 2.5 1080p is 10-bit H.265/HEVC. |
+| `ratio` | string | no | `adaptive` (2.5/2.0 series/1.5-pro) | `16:9`, `4:3`, `1:1`, `3:4`, `9:16`, `21:9`, `adaptive`. **2.5: edit / extend / first-frame tasks accept only `adaptive`** (§3.1.5). |
+| `duration` | integer | no | `-1` (2.5) / `5` (2.0) | Seconds. **2.5: [4, 30] or `-1`** (model picks; **video-editing tasks require `-1`**). **2.0 series: [4, 15]** (or `auto`). 1.0-pro/pro-fast/lite: [2, 12]. 1.5-pro: [4, 12]. |
+| `omni_reference_task_type` | string | no | `auto` | **2.5 only.** `auto` / `edit` / `extend` for omni-reference tasks. Declaring `edit`/`extend` moves constraint validation to submit time (synchronous). See §3.1.5. |
+| `output_format` | string | no | `mp4` | **2.5 only.** `mp4` or `mov` (H.264, yuv444p, PCM audio — higher color fidelity; recommended for edit/extend). |
 | `frames` | integer | no | — | Mutually exclusive with `duration` (`frames` wins if both set). **Not supported by 2.0/2.0-fast/1.5-pro.** Range `[29, 289]` matching `25 + 4n` (n positive int). Formula: `frames = duration × 24`. |
 | `seed` | integer | no | `-1` (random) | `[-1, 2^32 - 1]`. Same seed + same inputs → deterministic. |
 | `camera_fixed` | boolean | no | `false` | **Not supported by 2.0/2.0-fast.** When supported, appends a fix-camera instruction to the prompt. |
@@ -191,6 +206,24 @@ When you pass a `draft_task` reference, the platform automatically reuses the dr
 
 The ID is retained for 7 days from `created_at`. Use it with the Retrieve / Cancel endpoints.
 
+#### 3.1.5 Seedance 2.5 task types & constraints
+
+2.5 classifies every request from its assets + prompt intent. Violating a task type's constraints fails the task — asynchronously, unless `omni_reference_task_type` is declared.
+
+| Task type | Trigger | Hard constraints |
+| --- | --- | --- |
+| Text-to-video | text only | none |
+| First-frame / first-last-frame | `role: first_frame` (+ `last_frame`) | `ratio` must be `adaptive` — output follows the first-frame image |
+| Reference-to-video | any `reference_*` role, generative intent | none |
+| Video editing | `reference_video` + editing intent in the prompt ("edit the video", "add", "delete/remove", "modify/replace/change") | `ratio: adaptive`; `duration: -1` (output matches the source's ratio + duration, within 0.4 s); source video 4–30 s |
+| Video extension | `reference_video` + extension intent ("extend forward/backward", "continue", "continue the story") | `ratio: adaptive` (output matches the source's ratio); `duration` [4, 30] or `-1` |
+
+Validation timing:
+
+- `omni_reference_task_type: edit` or `extend` → constraints are checked **synchronously at submit**. If the model later infers a different type from the prompt, the task still fails async with `InvalidParameter.TaskTypeMismatch` — so include the intent keywords above.
+- Omitted or `auto` → the model infers the type, then checks constraints **asynchronously**; violations fail with `InvalidParameter.TaskTypeConstraint`.
+- Recommended defaults for any omni-reference call: `omni_reference_task_type: auto`, `ratio: adaptive`, `duration: -1`, reference videos 4–30 s. (`pipeline/seedance.py` attaches `auto` automatically and enforces the edit/extend/first-frame constraints client-side, so bad combos die before spending.)
+
 ### 3.2 GET /contents/generations/tasks/{id} — Retrieve
 
 ```
@@ -284,8 +317,9 @@ No response body.
 ### 4.2 Per-request budget
 
 - Total **request body** ≤ 64 MB (do not Base64-encode large files — use URLs).
-- Up to **9 images**, **3 videos with combined total ≤ 15 s**, **3 audio**. Up to **12 files** per request.
-- Image counts by scenario: I2V first-frame = 1; I2V first+last = 2; R2V (multimodal) = 1–9 (Seedance 2.0) / 1–4 (1.0 lite i2v).
+- **2.5:** up to **30 images**, **10 videos**, **10 audio** — 50 files per request; combined reference video/audio duration ≤ **30 s**. Audio may be the only reference.
+- **2.0 series:** up to **9 images**, **3 videos with combined total ≤ 15 s**, **3 audio**. Up to **12 files** per request. Audio never alone.
+- Image counts by scenario: I2V first-frame = 1; I2V first+last = 2; R2V (multimodal) = 1–30 (2.5) / 1–9 (2.0) / 1–4 (1.0 lite i2v).
 
 ### 4.3 Asset URI inputs
 
@@ -307,6 +341,8 @@ Seedance 2.0 series **do not** accept direct uploads of reference images or vide
 Prompts refer to assets by **type + 1-based ordinal in the request body**: `Image 1`, `Image 2`, `Video 1`, `Audio 1`, etc. Numbering counts only items of that type in the order they appear in the `content` array. Asset IDs are **not** referenceable from the prompt — you must use the ordinal.
 
 For multi-image / sequence references, **upload assets in the order you want them numbered**.
+
+Seedance 2.5's official examples write the ordinals with an `@` prefix — `@Image1`, `@Video 1` (e.g. *"Replace the character in @Video 1 with the character in @Image 1"*). Same numbering rules; pick one style and keep it consistent within a prompt.
 
 ---
 
@@ -420,7 +456,7 @@ Modifying: Replace [Description of element to be changed] in [Video N] with [Des
 [Video 1] + [Transition Description] + followed by [Video 2] + [Transition Description] + followed by [Video 3] ...
 ```
 
-> **Input limit:** Seedance 2.0 series supports a maximum of **3 video clips** as input, total combined duration ≤ **15 seconds**.
+> **Input limit:** Seedance 2.0 series supports a maximum of **3 video clips** as input, total combined duration ≤ **15 seconds**. Seedance 2.5 raises this to **10 clips / 30 seconds combined**.
 > **Smart trimming:** During generation, the model will automatically trim the connecting segments of the start and end clips, retaining only the necessary frames to ensure a seamless and logical synthesis.
 
 ---
@@ -649,6 +685,9 @@ When `status: failed` in the Retrieve response, the same `error` object is inclu
 - **Base64 not for video; not recommended for any large file.** Request body cap is 64 MB.
 - **Adaptive ratio:** when `ratio: adaptive`, the model resolves it from the prompt + first media (priority: video > image). Read the resolved value from the Retrieve response's `ratio` field.
 - **Service-tier downgrade unsupported.** Once a task is submitted, you cannot change `service_tier`.
+- **2.5 task-type errors:** `InvalidParameter.TaskTypeMismatch` = the declared `omni_reference_task_type` disagrees with what the prompt implies (add the intent keywords); `InvalidParameter.TaskTypeConstraint` = ratio / duration / source-length constraint violated for the inferred type. See §3.1.5.
+- **2.5 1080p is 10-bit H.265/HEVC** — some players and pipelines choke on it; use VLC / mpv / QuickTime, or generate 720p for compatibility.
+- **2.5 activation gate:** requires account balance > USD 30, an AI Savings Plan at the USD 30 tier or above, or a 2.5 resource pack — otherwise creates are rejected.
 
 ---
 

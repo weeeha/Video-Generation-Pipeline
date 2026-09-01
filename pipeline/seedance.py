@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Seedance 2.0 CLI — BytePlus ModelArk client.
+"""Seedance 2.5 / 2.0 CLI — BytePlus ModelArk client.
 
 Generalized from the proven PermitNav pipeline (permit-nav-team/video-generation).
 API contract: knowledge/api-reference.md · operational lessons: knowledge/gotchas.md
@@ -28,7 +28,23 @@ OUTPUT_DIR = REPO / "output"
 LIBRARY_DIR = REPO / "library"
 STATE_FILE = pathlib.Path(__file__).resolve().parent / "state.json"
 API = "https://ark.ap-southeast.bytepluses.com/api/v3"
-MODELS = {"full": "dreamina-seedance-2-0-260128", "fast": "dreamina-seedance-2-0-fast-260128"}
+MODELS = {
+    "full": "dreamina-seedance-2-5-260628",       # Seedance 2.5 (the default)
+    "2.0":  "dreamina-seedance-2-0-260128",       # Seedance 2.0 (adds 4k)
+    "fast": "dreamina-seedance-2-0-fast-260128",  # 2.0 fast — cheaper, 720p max
+    "mini": "dreamina-seedance-2-0-mini-260615",  # 2.0 mini — cheapest, 720p max
+}
+# per-model input/output envelopes (knowledge/api-reference.md §1, §4.2)
+LIMITS = {
+    "full": {"images": 30, "videos": 10, "audios": 10, "files": 50, "ref_secs": 30,
+             "dur": (4, 30), "res": {"480p", "720p", "1080p"}, "audio_alone": True},
+    "2.0":  {"images": 9, "videos": 3, "audios": 3, "files": 12, "ref_secs": 15,
+             "dur": (4, 15), "res": {"480p", "720p", "1080p", "4k"}, "audio_alone": False},
+    "fast": {"images": 9, "videos": 3, "audios": 3, "files": 12, "ref_secs": 15,
+             "dur": (4, 15), "res": {"480p", "720p"}, "audio_alone": False},
+    "mini": {"images": 9, "videos": 3, "audios": 3, "files": 12, "ref_secs": 15,
+             "dur": (4, 15), "res": {"480p", "720p"}, "audio_alone": False},
+}
 TERMINAL = {"succeeded", "failed", "cancelled", "expired"}
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tiff", ".gif"}
 AUDIO_EXTS = {".mp3", ".wav"}
@@ -155,10 +171,21 @@ def pack_items(pack):
 
 
 def pretty(ref):
+    if ref.startswith(("http://", "https://", "asset://", "data:")):
+        return ref
     try:
         return str(pathlib.Path(ref).resolve().relative_to(REPO))
     except (ValueError, OSError):
         return ref
+
+
+def model_key(args):
+    """Resolve --model/--fast to a MODELS key (default: 2.5 'full')."""
+    if args.fast:
+        if args.model not in (None, "fast"):
+            die(f"--fast conflicts with --model {args.model}")
+        return "fast"
+    return args.model or "full"
 
 
 def build_content(args, prompt):
@@ -179,14 +206,15 @@ def build_content(args, prompt):
         die("first/last-frame (I2V) and references (R2V) are mutually exclusive API scenarios")
     if args.last_frame and not args.first_frame:
         die("--last-frame requires --first-frame")
-    if len(ref_images) > 9:
-        die(f"{len(ref_images)} reference images — the cap is 9")
-    if len(ref_videos) > 3:
-        die("max 3 reference videos (combined length <= 15s)")
-    if len(ref_audios) > 3:
-        die("max 3 reference audio clips")
-    if ref_audios and not (ref_images or ref_videos):
-        die("audio can never be the only reference — pair it with an image or video")
+    lim = LIMITS[model_key(args)]
+    if len(ref_images) > lim["images"]:
+        die(f"{len(ref_images)} reference images — the {model_key(args)} cap is {lim['images']}")
+    if len(ref_videos) > lim["videos"]:
+        die(f"max {lim['videos']} reference videos (combined length <= {lim['ref_secs']}s)")
+    if len(ref_audios) > lim["audios"]:
+        die(f"max {lim['audios']} reference audio clips")
+    if ref_audios and not (ref_images or ref_videos) and not lim["audio_alone"]:
+        die("audio can't be the only reference on 2.0-series models — pair it with an image/video, or use the 2.5 default model")
 
     if args.first_frame:
         content.append({"type": "image_url", "image_url": {"url": to_asset_url(args.first_frame, "image")}, "role": "first_frame"})
@@ -204,33 +232,76 @@ def build_content(args, prompt):
         content.append({"type": "audio_url", "audio_url": {"url": to_asset_url(ref, "audio")}, "role": "reference_audio"})
         labels.append(f"Audio {n} <- {pretty(ref)}")
 
-    if len(content) - 1 > 12:
-        die("more than 12 asset files in one request")
+    if len(content) - 1 > lim["files"]:
+        die(f"more than {lim['files']} asset files in one request")
     return content, labels
 
 
 def build_body(args, content):
-    resolution = args.resolution or ("720p" if args.fast else "1080p")
-    if args.fast and resolution == "1080p":
-        die("2.0-fast does not support 1080p — drop --fast or use --resolution 720p")
+    mk = model_key(args)
+    lim = LIMITS[mk]
+    roles = [item.get("role") for item in content[1:]]
+    has_refs = any(r and r.startswith("reference_") for r in roles)
+
+    task_type = args.task_type
+    if task_type and mk != "full":
+        die("--task-type is Seedance 2.5 only — drop it, or drop --model/--fast")
+    if task_type in ("edit", "extend") and "reference_video" not in roles:
+        die(f"--task-type {task_type} needs at least one reference video (--video or a motion pack)")
+    if mk == "full" and has_refs and not task_type:
+        task_type = "auto"
+
+    # 2.5 hard constraints: edit/extend and first-frame tasks lock the aspect
+    # ratio (and edit also the duration) to the source asset — the API rejects
+    # anything else, asynchronously. Fail here instead, before spending.
+    forced_adaptive = task_type in ("edit", "extend") or (mk == "full" and "first_frame" in roles)
+    ratio = args.ratio
+    if forced_adaptive:
+        if ratio not in (None, "adaptive"):
+            die(f"this task locks the ratio to the source asset on 2.5 — it must be 'adaptive', not {ratio}")
+        ratio = "adaptive"
+    else:
+        ratio = ratio or "16:9"
+
+    resolution = args.resolution or ("1080p" if "1080p" in lim["res"] else "720p")
+    if resolution not in lim["res"]:
+        hint = "4k needs --model 2.0" if resolution == "4k" else "the max is 720p"
+        die(f"--resolution {resolution} is unsupported on the {mk} model — {hint}")
+
     duration = args.duration
-    if duration != "auto":
+    lo, hi = lim["dur"]
+    if task_type == "edit":
+        if duration not in (None, "auto", "-1"):
+            die("video editing keeps the source duration — it must be -1/'auto', so drop --duration")
+        duration = -1
+    elif duration is None:
+        duration = 5
+    elif duration == "auto":
+        duration = -1
+    else:
         try:
             duration = int(duration)
         except ValueError:
-            die("--duration must be an integer 4-15, or 'auto'")
-        if not 4 <= duration <= 15:
-            die("--duration must be 4-15, or 'auto'")
+            die(f"--duration must be an integer {lo}-{hi}, 'auto', or -1")
+        if duration != -1 and not lo <= duration <= hi:
+            die(f"--duration must be {lo}-{hi}, 'auto', or -1")
+
     body = {
-        "model": MODELS["fast" if args.fast else "full"],
+        "model": MODELS[mk],
         "content": content,
         "generate_audio": not args.no_audio,
-        "ratio": args.ratio,
+        "ratio": ratio,
         "duration": duration,
         "resolution": resolution,
         "watermark": args.watermark,
         "return_last_frame": not args.no_last_frame,
     }
+    if mk == "full" and has_refs:
+        body["omni_reference_task_type"] = task_type
+    if args.format:
+        if mk != "full":
+            die("--format is Seedance 2.5 only — 2.0-series models always output mp4")
+        body["output_format"] = args.format
     if args.seed is not None:
         body["seed"] = args.seed
     return body
@@ -384,7 +455,7 @@ def cmd_cancel(args):
     print(f"{args.task} cancelled (if queued) / record deleted (if finished)")
 
 
-def main():
+def build_parser():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
 
@@ -393,15 +464,18 @@ def main():
     g.add_argument("--prompt-file", help="file whose entire content is the prompt")
     g.add_argument("--name", help="label used for state + output filename (default: prompt file stem)")
     g.add_argument("--pack", action="append", metavar="PACK", help="attach a library pack (people/nova, places/loft, or a bare name searched across library/*/): refs/ images+audio and urls.txt entries become numbered references (repeatable)")
-    g.add_argument("--image", action="append", metavar="REF", help="reference image: local path, URL, or asset:// (repeatable, max 9 total)")
-    g.add_argument("--video", action="append", metavar="URL", help="reference video URL or asset:// (repeatable, max 3)")
-    g.add_argument("--audio", action="append", metavar="REF", help="reference audio: local path, URL, or asset:// (repeatable, max 3)")
-    g.add_argument("--first-frame", metavar="IMG", help="I2V: opening frame (e.g. a previous clip's output/<name>.last.png)")
+    g.add_argument("--image", action="append", metavar="REF", help="reference image: local path, URL, or asset:// (repeatable, max 30 on 2.5 / 9 on 2.0)")
+    g.add_argument("--video", action="append", metavar="URL", help="reference video URL or asset:// (repeatable, max 10 on 2.5 / 3 on 2.0)")
+    g.add_argument("--audio", action="append", metavar="REF", help="reference audio: local path, URL, or asset:// (repeatable, max 10 on 2.5 / 3 on 2.0; audio-only refs are 2.5 only)")
+    g.add_argument("--first-frame", metavar="IMG", help="I2V: opening frame (e.g. a previous clip's output/<name>.last.png); 2.5 forces ratio adaptive")
     g.add_argument("--last-frame", metavar="IMG", help="I2V: closing frame (requires --first-frame)")
-    g.add_argument("--ratio", default="16:9", choices=["16:9", "4:3", "1:1", "3:4", "9:16", "21:9", "adaptive"])
-    g.add_argument("--duration", default="5", help="seconds 4-15, or 'auto' (default 5)")
-    g.add_argument("--resolution", choices=["480p", "720p", "1080p"], help="default 1080p (720p with --fast)")
-    g.add_argument("--fast", action="store_true", help="use the cheaper 2.0-fast model (no 1080p)")
+    g.add_argument("--model", choices=list(MODELS), help="full = Seedance 2.5 (default) · 2.0 / fast / mini = the 2.0 series")
+    g.add_argument("--task-type", dest="task_type", choices=["auto", "edit", "extend"], help="2.5 omni-reference intent (omni_reference_task_type): auto is attached whenever references are present; edit/extend add the constraints the API enforces, validated here before spending")
+    g.add_argument("--format", choices=["mp4", "mov"], help="2.5 output container — mov (H.264/yuv444p/PCM) keeps better color for edit/extend")
+    g.add_argument("--ratio", choices=["16:9", "4:3", "1:1", "3:4", "9:16", "21:9", "adaptive"], help="default 16:9; edit/extend/first-frame on 2.5 force adaptive")
+    g.add_argument("--duration", help="seconds — 4-30 on 2.5, 4-15 on the 2.0 series, or 'auto'/-1 for model-chosen (default 5; edit forces -1)")
+    g.add_argument("--resolution", choices=["480p", "720p", "1080p", "4k"], help="default 1080p (720p on fast/mini); 4k is 2.0-full only; 2.5 1080p is 10-bit HEVC")
+    g.add_argument("--fast", action="store_true", help="shorthand for --model fast (2.0-fast: cheaper, 720p max)")
     g.add_argument("--seed", type=int, help="pin for reproducibility (same seed + inputs = same video)")
     g.add_argument("--no-audio", action="store_true", help="silent video (default generates native audio)")
     g.add_argument("--watermark", action="store_true")
@@ -431,7 +505,11 @@ def main():
     c.add_argument("task", help="task id")
     c.set_defaults(fn=cmd_cancel)
 
-    args = ap.parse_args()
+    return ap
+
+
+def main():
+    args = build_parser().parse_args()
     args.fn(args)
 
 
