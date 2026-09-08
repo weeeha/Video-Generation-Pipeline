@@ -81,14 +81,18 @@ Score each category from 0-2. A draft must score at least 8/12 and pass every au
 
 | Check | Observed value | Result |
 | --- | --- | --- |
-| Duration 25-30 seconds | | |
-| Resolution 1920x1080 | | |
-| Frame rate 24 fps | | |
-| H.264 and `yuv420p` | | |
-| AAC stereo 48 kHz | | |
-| Title and tagline | | |
-| No forbidden product claims | | |
-| No black frames or clipping | | |
+| Duration 25-30 seconds | 29.000s | Pass |
+| Resolution 1920x1080 | 1920x1080 | Pass |
+| Frame rate 24 fps | 24/1 | Pass |
+| H.264 and `yuv420p` | H.264, `yuv420p` | Pass |
+| AAC stereo 48 kHz | AAC LC, 2 channels, 48,000 Hz | Pass |
+| Title and tagline | Visually confirmed on final card | Pass |
+| No forbidden product claims | Manifest claim scan and visual QA clean | Pass |
+| No black frames or clipping | No 0.25s black interval; audio peak -32.6 dB | Pass |
+
+Delivery: `output/vr-game-things-puzzle-promo/vr-game-things-puzzle-promo-v1.mp4`
+
+SHA-256: `71f09155be4c79bc09999411d3c4eebc9a4f470fab97fb26b8964364cf1612a3`
 
 ## Disclosure
 

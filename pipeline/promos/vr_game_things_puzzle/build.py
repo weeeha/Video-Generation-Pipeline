@@ -94,7 +94,7 @@ def build_ffmpeg_command(
             "-t",
             f"{total:.3f}",
             "-i",
-            "anoisesrc=color=pink:amplitude=0.012:sample_rate=48000",
+            "anoisesrc=color=pink:amplitude=0.04:sample_rate=48000",
             "-f",
             "lavfi",
             "-t",
@@ -128,9 +128,10 @@ def build_ffmpeg_command(
     sine_index = noise_index + 1
     filters.extend(
         [
-            f"[{noise_index}:a]highpass=f=35,lowpass=f=1800,volume=0.16[noise]",
-            f"[{sine_index}:a]volume=0.025[hum]",
+            f"[{noise_index}:a]highpass=f=35,lowpass=f=1800,volume=0.40[noise]",
+            f"[{sine_index}:a]volume=0.12[hum]",
             "[noise][hum]amix=inputs=2:normalize=0,"
+            "alimiter=limit=0.7,"
             f"atrim=duration={total:.3f},asetpts=PTS-STARTPTS[aout]",
         ]
     )

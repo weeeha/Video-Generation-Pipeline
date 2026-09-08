@@ -86,6 +86,20 @@ class PromoManifestTests(unittest.TestCase):
         self.assertIn("+faststart", command)
         self.assertEqual(command[-1], str(REPO / "output/vr-game-things-puzzle-promo/test.mp4"))
 
+    def test_ffmpeg_command_sets_audible_restrained_sound_bed(self):
+        manifest = promo.load_manifest(MANIFEST)
+        command = promo.build_ffmpeg_command(
+            manifest,
+            REPO,
+            REPO / "output/vr-game-things-puzzle-promo/test.mp4",
+        )
+
+        filter_graph = command[command.index("-filter_complex") + 1]
+        self.assertIn("anoisesrc=color=pink:amplitude=0.04", " ".join(command))
+        self.assertIn("volume=0.40[noise]", filter_graph)
+        self.assertIn("volume=0.12[hum]", filter_graph)
+        self.assertIn("alimiter=limit=0.7", filter_graph)
+
     def test_missing_sources_are_reported_in_manifest_order(self):
         manifest = copy.deepcopy(promo.load_manifest(MANIFEST))
         manifest["shots"] = manifest["shots"][:2]
