@@ -23,6 +23,7 @@ library/              reference packs for R2V — one folder per reusable elemen
 pipeline/
   seedance.py         the client: generate / status / wait / list / cancel
   prompts/            prompt files (sent verbatim — the whole file is the prompt)
+                      example-r2v-25.md is the 2.5 sectioned format (timeline, scoped refs)
 output/               downloaded results (gitignored; URLs expire in 24h so the
                       client downloads immediately)
 ```
