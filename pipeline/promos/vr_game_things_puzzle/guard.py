@@ -26,6 +26,15 @@ FINGERPRINT_FIELDS = (
     "watermark",
 )
 SUBMISSION_EVENTS = {"reservation", "historical_generation"}
+CONFIGURATION_FIELDS = (
+    "model",
+    "resolution",
+    "duration",
+    "ratio",
+    "generate_audio",
+    "watermark",
+    "reference_pack",
+)
 
 
 def fingerprint_request(request: dict) -> str:
@@ -55,6 +64,18 @@ def _paid_cost(request: dict) -> tuple[Decimal | None, str | None]:
     return cost, None
 
 
+def _configuration_errors(policy: dict, request: dict, stage: str) -> list[str]:
+    approved = policy.get("approved_stage_configurations", {}).get(stage)
+    if not isinstance(approved, dict):
+        return [f"no approved configuration for stage: {stage}"]
+    return [
+        f"{stage} configuration mismatch: {field} must be {approved[field]}, "
+        f"got {request.get(field)}"
+        for field in CONFIGURATION_FIELDS
+        if request.get(field) != approved.get(field)
+    ]
+
+
 def validate_request(policy: dict, ledger: list[dict], request: dict) -> list[str]:
     """Return every policy violation without changing the ledger."""
     submissions = [record for record in ledger if _is_submission(record)]
@@ -76,6 +97,7 @@ def validate_request(policy: dict, ledger: list[dict], request: dict) -> list[st
         count = sum(record.get("stage") == stage for record in submissions)
         if count >= limit:
             errors.append(f"{stage} limit reached: {count}/{limit}")
+        errors.extend(_configuration_errors(policy, request, stage))
     else:
         errors.append(f"unsupported stage: {stage}")
 
@@ -83,6 +105,15 @@ def validate_request(policy: dict, ledger: list[dict], request: dict) -> list[st
     if cost_error:
         errors.append(cost_error)
     else:
+        approved = policy.get("approved_stage_configurations", {}).get(stage, {})
+        minimum_value = approved.get("minimum_estimated_cost_usd")
+        if minimum_value is not None:
+            minimum = Decimal(str(minimum_value))
+            if cost < minimum:
+                errors.append(
+                    f"estimated_cost_usd below {stage} minimum: "
+                    f"USD {cost:.2f} < USD {minimum:.2f}"
+                )
         total = sum((_cost(record) for record in submissions), Decimal())
         projected = total + cost
         limit = Decimal(str(policy["max_usd"]))
@@ -208,6 +239,20 @@ def request_from_seedance_args(stage: str, estimated_cost_usd: str, seedance_arg
         raise ValueError("exactly one of --prompt / --prompt-file is required")
     if not args.name:
         raise ValueError("guarded CLI requires a stable --name")
+    policy = json.loads(POLICY_PATH.read_text())
+    approved = policy.get("approved_stage_configurations", {}).get(stage)
+    if not isinstance(approved, dict):
+        raise ValueError(f"no approved configuration for stage: {stage}")
+    if any((args.image, args.video, args.audio, args.first_frame, args.last_frame)):
+        raise ValueError(
+            "guarded CLI permits only the approved image pack; direct image, video, "
+            "audio, and frame references require a policy change"
+        )
+    reference_pack = approved["reference_pack"]
+    if args.pack != [reference_pack]:
+        raise ValueError(
+            f"guarded CLI requires exactly one approved image pack: {reference_pack}"
+        )
     if args.prompt_file:
         prompt_bytes = pathlib.Path(args.prompt_file).read_bytes()
         prompt = prompt_bytes.decode().strip()
@@ -216,6 +261,12 @@ def request_from_seedance_args(stage: str, estimated_cost_usd: str, seedance_arg
         prompt = args.prompt
         prompt_sha256 = hashlib.sha256(prompt.encode()).hexdigest()
     content, _ = seedance.build_content(args, prompt)
+    roles = [item.get("role") for item in content if item.get("role")]
+    if any(role != "reference_image" for role in roles):
+        raise ValueError(
+            "approved pack must contain image references only; video or audio "
+            "references require a policy change"
+        )
     body = seedance.build_body(args, content)
     return {
         "name": args.name,
@@ -227,6 +278,7 @@ def request_from_seedance_args(stage: str, estimated_cost_usd: str, seedance_arg
         "ratio": body["ratio"],
         "generate_audio": body["generate_audio"],
         "watermark": body["watermark"],
+        "reference_pack": reference_pack,
         "estimated_cost_usd": estimated_cost_usd,
     }, seedance_argv
 

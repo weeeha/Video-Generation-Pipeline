@@ -31,6 +31,7 @@
     "generate_audio": false,
     "watermark": false,
     "task_id": "cgt-20260806145151-7dsxq",
+    "local_artifact": "output/vr-game-things-puzzle-promo/drafts/d02b-connection.mp4",
     "completion_tokens": 108900,
     "estimated_cost_usd": 0.61,
     "decision": "Pass; not promoted"
@@ -86,9 +87,10 @@
     "generate_audio": false,
     "watermark": false,
     "task_id": "cgt-20260806145130-tt5b2",
+    "local_artifact": "output/vr-game-things-puzzle-promo/drafts/d02a-connection.mp4",
     "completion_tokens": 108900,
     "estimated_cost_usd": 0.61,
-    "decision": "Pass; not promoted"
+    "decision": "Reject: connection action is not readable"
   },
   {
     "event": "historical_generation",

@@ -276,10 +276,10 @@ request from the exact Seedance arguments, records the estimated cost, and only
 then delegates to the general CLI:
 
 ```bash
-python3 pipeline/promos/vr_game_things_puzzle/guard.py generate --stage draft --estimated-cost-usd 0.60 -- generate --prompt-file pipeline/prompts/vr-game-things-puzzle/01-cockpit-approach.md --pack vehicles/apache-v1-promo --fast --resolution 720p --duration 5 --ratio 16:9 --no-audio --name vrgtp-d01-cockpit-approach
-python3 pipeline/promos/vr_game_things_puzzle/guard.py generate --stage draft --estimated-cost-usd 0.60 -- generate --prompt-file pipeline/prompts/vr-game-things-puzzle/02-magnetic-connection.md --pack vehicles/apache-v1-promo --fast --resolution 720p --duration 5 --ratio 16:9 --no-audio --name vrgtp-d02-magnetic-connection
-python3 pipeline/promos/vr_game_things_puzzle/guard.py generate --stage draft --estimated-cost-usd 0.60 -- generate --prompt-file pipeline/prompts/vr-game-things-puzzle/03-three-piece-assembly.md --pack vehicles/apache-v1-promo --fast --resolution 720p --duration 5 --ratio 16:9 --no-audio --name vrgtp-d03-three-piece-assembly
-python3 pipeline/promos/vr_game_things_puzzle/guard.py generate --stage draft --estimated-cost-usd 0.60 -- generate --prompt-file pipeline/prompts/vr-game-things-puzzle/04-hero-reveal.md --pack vehicles/apache-v1-promo --fast --resolution 720p --duration 5 --ratio 16:9 --no-audio --name vrgtp-d04-hero-reveal
+python3 pipeline/promos/vr_game_things_puzzle/guard.py generate --stage draft --estimated-cost-usd 0.61 -- generate --prompt-file pipeline/prompts/vr-game-things-puzzle/01-cockpit-approach.md --pack vehicles/apache-v1-promo --fast --resolution 720p --duration 5 --ratio 16:9 --no-audio --name vrgtp-d01-cockpit-approach
+python3 pipeline/promos/vr_game_things_puzzle/guard.py generate --stage draft --estimated-cost-usd 0.61 -- generate --prompt-file pipeline/prompts/vr-game-things-puzzle/02-magnetic-connection.md --pack vehicles/apache-v1-promo --fast --resolution 720p --duration 5 --ratio 16:9 --no-audio --name vrgtp-d02-magnetic-connection
+python3 pipeline/promos/vr_game_things_puzzle/guard.py generate --stage draft --estimated-cost-usd 0.61 -- generate --prompt-file pipeline/prompts/vr-game-things-puzzle/03-three-piece-assembly.md --pack vehicles/apache-v1-promo --fast --resolution 720p --duration 5 --ratio 16:9 --no-audio --name vrgtp-d03-three-piece-assembly
+python3 pipeline/promos/vr_game_things_puzzle/guard.py generate --stage draft --estimated-cost-usd 0.61 -- generate --prompt-file pipeline/prompts/vr-game-things-puzzle/04-hero-reveal.md --pack vehicles/apache-v1-promo --fast --resolution 720p --duration 5 --ratio 16:9 --no-audio --name vrgtp-d04-hero-reveal
 ```
 
 Move downloaded outputs to the `drafts/` directory without deleting the client state record.

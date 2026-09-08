@@ -29,12 +29,12 @@ the corrected sequence uses the already accepted `d02b-connection.mp4` and
 
 ## Draft tasks
 
-| Name | Prompt | Task ID | Model | Status | Completion tokens | Estimated cost | Decision |
-| --- | --- | --- | --- | --- | ---: | ---: | --- |
-| `vrgtp-d01-cockpit-approach` | `01-cockpit-approach.md` | `cgt-20260806145059-rj5cc` | `dreamina-seedance-2-0-fast-260128` | Succeeded | 108,900 | USD 0.61 | Reject: malformed glove/cockpit interaction |
-| `vrgtp-d02-magnetic-connection` | `02-magnetic-connection.md` | `cgt-20260806145151-7dsxq` | `dreamina-seedance-2-0-fast-260128` | Succeeded | 108,900 | USD 0.61 | Pass; not promoted |
-| `vrgtp-d03-three-piece-assembly` | `03-three-piece-assembly.md` | `cgt-20260806145221-c5vxs` | `dreamina-seedance-2-0-fast-260128` | Succeeded | 108,900 | USD 0.61 | Selected assembly concept |
-| `vrgtp-d04-hero-reveal` | `04-hero-reveal.md` | `cgt-20260806145308-2rx9p` | `dreamina-seedance-2-0-fast-260128` | Succeeded | 108,900 | USD 0.61 | Reject: geometry and weapon-pod drift |
+| Name | Prompt | Task ID | Local artifact | Model | Status | Completion tokens | Estimated cost | Decision |
+| --- | --- | --- | --- | --- | --- | ---: | ---: | --- |
+| `vrgtp-d01-cockpit-approach` | `01-cockpit-approach.md` | `cgt-20260806145059-rj5cc` | — | `dreamina-seedance-2-0-fast-260128` | Succeeded | 108,900 | USD 0.61 | Reject: malformed glove/cockpit interaction |
+| `vrgtp-d02-magnetic-connection` | `02-magnetic-connection.md` | `cgt-20260806145151-7dsxq` | `output/vr-game-things-puzzle-promo/drafts/d02b-connection.mp4` (`d02b`) | `dreamina-seedance-2-0-fast-260128` | Succeeded | 108,900 | USD 0.61 | Pass; not promoted |
+| `vrgtp-d03-three-piece-assembly` | `03-three-piece-assembly.md` | `cgt-20260806145221-c5vxs` | — | `dreamina-seedance-2-0-fast-260128` | Succeeded | 108,900 | USD 0.61 | Selected assembly concept |
+| `vrgtp-d04-hero-reveal` | `04-hero-reveal.md` | `cgt-20260806145308-2rx9p` | — | `dreamina-seedance-2-0-fast-260128` | Succeeded | 108,900 | USD 0.61 | Reject: geometry and weapon-pod drift |
 
 ### Draft submission incident
 
@@ -46,11 +46,11 @@ reconciled before final generation. A simultaneous MTL task was identified by
 its 21:9 output and restaurant-robot content, excluded from this promo, and not
 counted in this ledger.
 
-| Variant | Prompt | Task ID | Status | Completion tokens | Estimated cost | Decision |
-| --- | --- | --- | --- | ---: | ---: | --- |
-| `connection-a` | `02-magnetic-connection.md` | `cgt-20260806145130-tt5b2` | Succeeded | 108,900 | USD 0.61 | Pass; not promoted |
-| `assembly-b` | `03-three-piece-assembly.md` | `cgt-20260806145228-mxfgq` | Succeeded | 108,900 | USD 0.61 | Pass; not promoted |
-| `hero-a` | `04-hero-reveal.md` | `cgt-20260806145241-vxlch` | Succeeded | 108,900 | USD 0.61 | Selected hero concept |
+| Variant | Prompt | Task ID | Local artifact | Status | Completion tokens | Estimated cost | Decision |
+| --- | --- | --- | --- | --- | ---: | ---: | --- |
+| `connection-a` | `02-magnetic-connection.md` | `cgt-20260806145130-tt5b2` | `output/vr-game-things-puzzle-promo/drafts/d02a-connection.mp4` (`d02a`) | Succeeded | 108,900 | USD 0.61 | Reject: connection action is not readable |
+| `assembly-b` | `03-three-piece-assembly.md` | `cgt-20260806145228-mxfgq` | — | Succeeded | 108,900 | USD 0.61 | Pass; not promoted |
+| `hero-a` | `04-hero-reveal.md` | `cgt-20260806145241-vxlch` | — | Succeeded | 108,900 | USD 0.61 | Selected hero concept |
 
 ## Draft QA matrix
 
