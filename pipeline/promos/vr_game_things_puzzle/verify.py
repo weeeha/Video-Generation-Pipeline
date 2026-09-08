@@ -22,6 +22,10 @@ def _frame_rate(value: str) -> float:
     return float(Fraction(value)) if value not in {"", "0/0"} else 0.0
 
 
+def _duration(value: str | None) -> float:
+    return float(value) if value not in {None, "", "N/A"} else 0.0
+
+
 def probe_media(path: pathlib.Path) -> dict:
     """Return normalized audio/video metadata from ffprobe."""
     result = subprocess.run(
@@ -45,6 +49,8 @@ def probe_media(path: pathlib.Path) -> dict:
         (stream for stream in payload["streams"] if stream["codec_type"] == "audio"),
         None,
     )
+    format_duration = _duration(payload.get("format", {}).get("duration"))
+    stream_duration = _duration(video.get("duration"))
     mp4_bytes = path.read_bytes()
     moov_offset = mp4_bytes.find(b"moov")
     mdat_offset = mp4_bytes.find(b"mdat")
@@ -52,6 +58,10 @@ def probe_media(path: pathlib.Path) -> dict:
         "width": int(video["width"]),
         "height": int(video["height"]),
         "fps": _frame_rate(video.get("avg_frame_rate", "0/0")),
+        "pix_fmt": video.get("pix_fmt"),
+        "format_duration": format_duration,
+        "stream_duration": stream_duration,
+        "duration": format_duration or stream_duration,
         "video_codec": video.get("codec_name"),
         "audio_codec": audio.get("codec_name") if audio else None,
         "sample_rate": int(audio["sample_rate"]) if audio else None,
@@ -78,6 +88,10 @@ def verify_media(path: pathlib.Path, expected: dict) -> list[str]:
             )
     if "fps" in expected and abs(actual["fps"] - float(expected["fps"])) > 0.01:
         errors.append(f"fps must be {expected['fps']}, got {actual['fps']:.3f}")
+    if actual["pix_fmt"] != "yuv420p":
+        errors.append(f"pixel format must be yuv420p, got {actual['pix_fmt']}")
+    if not 25.0 <= actual["duration"] <= 30.0:
+        errors.append(f"duration must be 25-30 seconds, got {actual['duration']:.3f}")
     for key, label in (
         ("video_codec", "video codec"),
         ("audio_codec", "audio codec"),

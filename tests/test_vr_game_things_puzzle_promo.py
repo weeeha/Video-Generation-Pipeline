@@ -111,7 +111,9 @@ def test_build_cli_print_command_renders_a_slate(tmp_path):
     assert "title.mp4" not in result.stdout
 
 
-def _make_test_media(path, *, width, height=1080, faststart=True):
+def _make_test_media(
+    path, *, width, height=1080, pix_fmt="yuv420p", duration=0.2, faststart=True
+):
     command = [
         "ffmpeg",
         "-y",
@@ -124,11 +126,11 @@ def _make_test_media(path, *, width, height=1080, faststart=True):
         "-i",
         "anullsrc=channel_layout=stereo:sample_rate=48000",
         "-t",
-        "0.2",
+        str(duration),
         "-c:v",
         "libx264",
         "-pix_fmt",
-        "yuv420p",
+        pix_fmt,
         "-c:a",
         "aac",
     ]
@@ -144,7 +146,7 @@ def _make_test_media(path, *, width, height=1080, faststart=True):
 
 def test_media_verifier_accepts_delivery_media_and_checks_hash(tmp_path):
     media_path = tmp_path / "valid.mp4"
-    _make_test_media(media_path, width=1920)
+    _make_test_media(media_path, width=1920, duration=25.0)
 
     errors = verify.verify_media(
         media_path,
@@ -186,12 +188,30 @@ def test_media_verifier_requires_faststart_atom_order(tmp_path):
     assert "moov atom must occur before mdat" in errors
 
 
+def test_media_verifier_rejects_non_yuv420p_pixel_format(tmp_path):
+    media_path = tmp_path / "wrong-pixel-format.mp4"
+    _make_test_media(media_path, width=1920, pix_fmt="yuv444p", duration=25.0)
+
+    errors = verify.verify_media(media_path, {"width": 1920, "height": 1080})
+
+    assert "pixel format must be yuv420p, got yuv444p" in errors
+
+
+def test_media_verifier_rejects_duration_outside_delivery_range(tmp_path):
+    media_path = tmp_path / "too-short.mp4"
+    _make_test_media(media_path, width=1920, duration=1.0)
+
+    errors = verify.verify_media(media_path, {"width": 1920, "height": 1080})
+
+    assert any(error.startswith("duration must be 25-30 seconds, got ") for error in errors)
+
+
 class PromoManifestTests(unittest.TestCase):
     def test_manifest_matches_approved_delivery_contract(self):
         manifest = promo.load_manifest(MANIFEST)
 
         self.assertEqual((manifest["width"], manifest["height"]), (1920, 1080))
-        self.assertIn(manifest["fps"], (24, 30))
+        self.assertEqual(manifest["fps"], 24)
         self.assertEqual(manifest["title"], "VR Game Things Puzzle")
         self.assertEqual(manifest["tagline"], "Build it. Then operate it.")
         self.assertGreaterEqual(promo.timeline_duration(manifest), 25.0)
@@ -223,6 +243,14 @@ class PromoManifestTests(unittest.TestCase):
         errors = promo.validate_manifest(manifest, REPO, require_files=False)
 
         self.assertIn("shot 1 has unsupported kind: imaginary", errors)
+
+    def test_manifest_rejects_non_24_fps(self):
+        manifest = promo.load_manifest(MANIFEST)
+        manifest["fps"] = 30
+
+        errors = promo.validate_manifest(manifest, REPO, require_files=False)
+
+        self.assertIn("fps must be 24", errors)
 
     def test_manifest_requires_boolean_audio_declaration(self):
         manifest = promo.load_manifest(MANIFEST)

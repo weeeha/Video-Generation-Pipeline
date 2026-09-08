@@ -46,8 +46,8 @@ def validate_manifest(manifest: dict, repo: pathlib.Path, require_files: bool = 
     errors: list[str] = []
     if (manifest.get("width"), manifest.get("height")) != (1920, 1080):
         errors.append("output dimensions must be 1920x1080")
-    if manifest.get("fps") not in (24, 30):
-        errors.append("fps must be 24 or 30")
+    if manifest.get("fps") != 24:
+        errors.append("fps must be 24")
 
     duration = timeline_duration(manifest)
     if not 25.0 <= duration <= 30.0:
