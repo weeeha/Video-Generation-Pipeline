@@ -1,12 +1,189 @@
 import copy
+import hashlib
 import pathlib
+import subprocess
+import sys
 import unittest
 
+from PIL import Image
+
 from pipeline.promos.vr_game_things_puzzle import build as promo
+from pipeline.promos.vr_game_things_puzzle import slate
+from pipeline.promos.vr_game_things_puzzle import verify
 
 
 REPO = pathlib.Path(__file__).resolve().parents[1]
 MANIFEST = REPO / "pipeline/promos/vr_game_things_puzzle/manifest.json"
+
+
+def test_manifest_excludes_thirteen_system_fallbacks():
+    manifest = promo.load_manifest(MANIFEST)
+    paths = [str(shot.get("path", "")) for shot in manifest["shots"]]
+    assert not any(path.endswith(("grab.mp4", "snap.mp4")) for path in paths)
+    assert not any(
+        "exploded" in asset.lower()
+        for shot in manifest["shots"]
+        for asset in shot.get("source_assets", [])
+    )
+
+
+def test_manifest_uses_only_tracked_inputs_from_fresh_checkout():
+    manifest = promo.load_manifest(MANIFEST)
+    errors = promo.validate_manifest(manifest, REPO, require_files=True)
+    assert errors == []
+    assert all(
+        shot["kind"] == "title"
+        or str(shot["path"]).startswith("deliverables/vr-game-things-puzzle-promo/")
+        for shot in manifest["shots"]
+    )
+
+
+def test_slate_is_manifest_driven_and_delivery_sized(tmp_path):
+    manifest = promo.load_manifest(MANIFEST)
+
+    first = slate.render_slate(manifest, tmp_path / "first.png")
+    changed = copy.deepcopy(manifest)
+    changed["tagline"] = "A different approved line"
+    second = slate.render_slate(changed, tmp_path / "second.png")
+
+    assert Image.open(first).size == (1920, 1080)
+    assert hashlib.sha256(first.read_bytes()).digest() != hashlib.sha256(second.read_bytes()).digest()
+
+
+def test_ffmpeg_command_matches_shot_audio_and_uses_generated_slate(tmp_path):
+    manifest = {
+        "width": 1920,
+        "height": 1080,
+        "fps": 24,
+        "transition": 0.25,
+        "shots": [
+            {
+                "path": "deliverables/vr-game-things-puzzle-promo/source/library.mp4",
+                "duration": 3.0,
+                "kind": "repository",
+                "has_audio": True,
+                "source_assets": [],
+            },
+            {
+                "path": None,
+                "duration": 3.5,
+                "kind": "title",
+                "has_audio": False,
+                "source_assets": [],
+            },
+        ],
+    }
+    slate_path = tmp_path / "approved-slate.png"
+    command = promo.build_ffmpeg_command(
+        manifest, REPO, tmp_path / "assembled.mp4", slate_path
+    )
+
+    filter_graph = command[command.index("-filter_complex") + 1]
+    assert "[0:a]aresample=48000" in filter_graph
+    assert "anullsrc=channel_layout=stereo:sample_rate=48000" in filter_graph
+    assert "acrossfade=d=0.250" in filter_graph
+    assert "[source_audio][ambience]amix=inputs=2" in filter_graph
+    assert str(slate_path) in command
+    assert "title.mp4" not in " ".join(command)
+
+
+def test_build_cli_print_command_renders_a_slate(tmp_path):
+    output = tmp_path / "promo.mp4"
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(REPO / "pipeline/promos/vr_game_things_puzzle/build.py"),
+            "--repo",
+            str(REPO),
+            "--manifest",
+            str(MANIFEST),
+            "--output",
+            str(output),
+            "--print-command",
+        ],
+        cwd=REPO,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert output.with_suffix(".slate.png").is_file()
+    assert "title.mp4" not in result.stdout
+
+
+def _make_test_media(path, *, width, height=1080, faststart=True):
+    command = [
+        "ffmpeg",
+        "-y",
+        "-f",
+        "lavfi",
+        "-i",
+        f"color=c=black:s={width}x{height}:r=24",
+        "-f",
+        "lavfi",
+        "-i",
+        "anullsrc=channel_layout=stereo:sample_rate=48000",
+        "-t",
+        "0.2",
+        "-c:v",
+        "libx264",
+        "-pix_fmt",
+        "yuv420p",
+        "-c:a",
+        "aac",
+    ]
+    if faststart:
+        command.extend(["-movflags", "+faststart"])
+    command.append(str(path))
+    subprocess.run(
+        command,
+        check=True,
+        capture_output=True,
+    )
+
+
+def test_media_verifier_accepts_delivery_media_and_checks_hash(tmp_path):
+    media_path = tmp_path / "valid.mp4"
+    _make_test_media(media_path, width=1920)
+
+    errors = verify.verify_media(
+        media_path,
+        {
+            "width": 1920,
+            "height": 1080,
+            "fps": 24,
+            "video_codec": "h264",
+            "audio_codec": "aac",
+            "sample_rate": 48000,
+            "channels": 2,
+            "faststart": True,
+        },
+    )
+
+    assert errors == []
+    payload = tmp_path / "payload.bin"
+    payload.write_bytes(b"abc")
+    assert verify.sha256_file(payload) == (
+        "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+    )
+
+
+def test_media_verifier_reports_wrong_dimensions(tmp_path):
+    media_path = tmp_path / "wrong-size.mp4"
+    _make_test_media(media_path, width=640, height=360)
+
+    errors = verify.verify_media(media_path, {"width": 1920, "height": 1080})
+
+    assert "dimensions must be 1920x1080, got 640x360" in errors
+
+
+def test_media_verifier_requires_faststart_atom_order(tmp_path):
+    media_path = tmp_path / "slow-start.mp4"
+    _make_test_media(media_path, width=1920, faststart=False)
+
+    errors = verify.verify_media(media_path, {"width": 1920, "height": 1080})
+
+    assert "moov atom must occur before mdat" in errors
 
 
 class PromoManifestTests(unittest.TestCase):
@@ -47,6 +224,30 @@ class PromoManifestTests(unittest.TestCase):
 
         self.assertIn("shot 1 has unsupported kind: imaginary", errors)
 
+    def test_manifest_requires_boolean_audio_declaration(self):
+        manifest = promo.load_manifest(MANIFEST)
+        manifest["shots"][0]["has_audio"] = "false"
+
+        errors = promo.validate_manifest(manifest, REPO, require_files=False)
+
+        self.assertIn("shot 1 has_audio must be Boolean", errors)
+
+    def test_manifest_requires_title_without_path(self):
+        manifest = promo.load_manifest(MANIFEST)
+        manifest["shots"][-1]["path"] = "deliverables/title.mp4"
+
+        errors = promo.validate_manifest(manifest, REPO, require_files=False)
+
+        self.assertIn("shot 7 title must not have a path", errors)
+
+    def test_manifest_rejects_exploded_repository_source_asset(self):
+        manifest = promo.load_manifest(MANIFEST)
+        manifest["shots"][0]["source_assets"] = ["refs/02-apache-exploded.png"]
+
+        errors = promo.validate_manifest(manifest, REPO, require_files=False)
+
+        self.assertIn("shot 1 repository source asset must not be exploded", errors)
+
     def test_manifest_accepts_disclosed_repository_render_fallback(self):
         manifest = promo.load_manifest(MANIFEST)
         manifest["shots"][0]["kind"] = "repository"
@@ -76,6 +277,7 @@ class PromoManifestTests(unittest.TestCase):
             manifest,
             REPO,
             REPO / "output/vr-game-things-puzzle-promo/test.mp4",
+            REPO / "output/vr-game-things-puzzle-promo/test-slate.png",
         )
 
         self.assertEqual(command[0], "ffmpeg")
@@ -92,6 +294,7 @@ class PromoManifestTests(unittest.TestCase):
             manifest,
             REPO,
             REPO / "output/vr-game-things-puzzle-promo/test.mp4",
+            REPO / "output/vr-game-things-puzzle-promo/test-slate.png",
         )
 
         filter_graph = command[command.index("-filter_complex") + 1]
