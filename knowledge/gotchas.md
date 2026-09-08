@@ -41,6 +41,37 @@ API quirks + lessons from the PermitNav production run (June 2026). Sources:
 - **2.5 1080p output is 10-bit H.265/HEVC** — some players/pipelines can't read it. VLC,
   mpv, QuickTime work; use 720p (or `--format mov`) when compatibility matters.
 
+## 2.5 craft lessons (community, Sept 2026)
+
+Collected from creator guides and reviews; sources in
+[prompt-guide.md](prompt-guide.md#sources-community-craft-sept-2026). Rules for
+applying them are in the prompt guide; this is the list of what bites.
+
+- **2.0 prompts break on 2.5.** Testers report glitchy, visibly broken output when a
+  working 2.0 prompt is re-run unchanged. Re-prompt with timeline blocks and scoped
+  references; do not port.
+- **30 seconds is time, not events.** Without timestamps the model spends the opening
+  well and drifts or rushes the end. Always describe the final frame.
+- **Morphing in fast action is still there** on 2.5 and no upscaler hides it. Slow the
+  action down, or plan to cut around it.
+- **Props render at the wrong scale** occasionally (a book the size of a suitcase), and
+  **body proportions drift between shots** even when the face holds. QA silhouette,
+  height, wardrobe, accessories and relative scale, not just the face. Small accessories
+  vanish first.
+- **Multi-character scenes are the weakest area:** relative scale and positioning wander.
+  Lock positions in the prompt ("keep her in the left third of frame").
+- **More references means more drift.** Two angle-matched images beat six. Mixing a
+  frontal with a profile makes the model invent features.
+- **Voice is inferred from the reference images** and the wording is fragile: "American"
+  fixed an accent where "American English" pushed it British.
+- **Input order is not shot order** when first-frame and omni references are mixed.
+  Restate the sequence in the prompt text.
+- **A 30s take usually holds several usable segments.** Cut around a flaw in post before
+  paying for a regenerate; if 24 of 30 seconds work, fix that beat and keep the seed.
+- **Draft on fast, finish on 2.5.** 2.5 wins on character consistency, expressions and
+  dialogue scenes; one head-to-head still had 2.0 cleaner on mechanical product
+  transformations, so test both for product work.
+
 ## Production lessons (PermitNav run)
 
 - **On-screen text is unreliable** — it doubled a caption in production. Generate clean
