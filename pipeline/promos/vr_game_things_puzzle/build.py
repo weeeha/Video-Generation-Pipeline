@@ -127,7 +127,7 @@ def build_ffmpeg_command(
             "-t",
             f"{total:.3f}",
             "-i",
-            "anoisesrc=color=pink:amplitude=0.04:sample_rate=48000",
+            "anoisesrc=color=pink:amplitude=0.04:sample_rate=48000:seed=6401",
             "-f",
             "lavfi",
             "-t",
@@ -139,13 +139,13 @@ def build_ffmpeg_command(
             "-t",
             "0.16",
             "-i",
-            "anoisesrc=color=white:amplitude=0.35:sample_rate=48000",
+            "anoisesrc=color=white:amplitude=0.35:sample_rate=48000:seed=6402",
             "-f",
             "lavfi",
             "-t",
             "0.16",
             "-i",
-            "anoisesrc=color=white:amplitude=0.35:sample_rate=48000",
+            "anoisesrc=color=white:amplitude=0.35:sample_rate=48000:seed=6403",
         ]
     )
 

@@ -170,6 +170,46 @@ def test_media_verifier_accepts_delivery_media_and_checks_hash(tmp_path):
     )
 
 
+def test_media_verifier_cli_reports_valid_delivery_contract():
+    media_path = (
+        REPO / "deliverables/vr-game-things-puzzle-promo/final/promo.mp4"
+    )
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(REPO / "pipeline/promos/vr_game_things_puzzle/verify.py"),
+            str(media_path),
+        ],
+        cwd=REPO,
+        capture_output=True,
+        text=True,
+    )
+    expected_hash = hashlib.sha256(media_path.read_bytes()).hexdigest()
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == (
+        "valid: 1920x1080 h264 yuv420p 24.000fps 29.000s "
+        f"aac stereo 48000Hz faststart sha256={expected_hash}\n"
+    )
+
+
+def test_media_verifier_cli_rejects_unprobeable_media(tmp_path):
+    media_path = tmp_path / "missing.mp4"
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(REPO / "pipeline/promos/vr_game_things_puzzle/verify.py"),
+            str(media_path),
+        ],
+        cwd=REPO,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    assert result.stderr == f"error: could not probe media: {media_path}\n"
+
+
 def test_media_verifier_reports_wrong_dimensions(tmp_path):
     media_path = tmp_path / "wrong-size.mp4"
     _make_test_media(media_path, width=640, height=360)
@@ -330,6 +370,29 @@ class PromoManifestTests(unittest.TestCase):
         self.assertIn("volume=0.40[noise]", filter_graph)
         self.assertIn("volume=0.12[hum]", filter_graph)
         self.assertIn("alimiter=limit=0.7", filter_graph)
+
+    def test_ffmpeg_command_seeds_generated_noise_for_reproducible_audio(self):
+        manifest = promo.load_manifest(MANIFEST)
+        command = promo.build_ffmpeg_command(
+            manifest,
+            REPO,
+            REPO / "output/vr-game-things-puzzle-promo/test.mp4",
+            REPO / "output/vr-game-things-puzzle-promo/test-slate.png",
+        )
+        noise_inputs = [
+            command[index + 1]
+            for index, argument in enumerate(command[:-1])
+            if argument == "-i" and command[index + 1].startswith("anoisesrc=")
+        ]
+
+        self.assertEqual(
+            noise_inputs,
+            [
+                "anoisesrc=color=pink:amplitude=0.04:sample_rate=48000:seed=6401",
+                "anoisesrc=color=white:amplitude=0.35:sample_rate=48000:seed=6402",
+                "anoisesrc=color=white:amplitude=0.35:sample_rate=48000:seed=6403",
+            ],
+        )
 
     def test_missing_sources_are_reported_in_manifest_order(self):
         manifest = copy.deepcopy(promo.load_manifest(MANIFEST))

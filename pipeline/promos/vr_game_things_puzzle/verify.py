@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import pathlib
 import subprocess
+import sys
 from fractions import Fraction
 
 
@@ -103,3 +105,36 @@ def verify_media(path: pathlib.Path, expected: dict) -> list[str]:
     if not actual["faststart"]:
         errors.append("moov atom must occur before mdat")
     return errors
+
+
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("media", type=pathlib.Path)
+    args = parser.parse_args(argv)
+    expected = {
+        "width": 1920,
+        "height": 1080,
+        "fps": 24,
+        "video_codec": "h264",
+        "audio_codec": "aac",
+        "sample_rate": 48000,
+        "channels": 2,
+    }
+    errors = verify_media(args.media, expected)
+    if errors:
+        for error in errors:
+            print(f"error: {error}", file=sys.stderr)
+        raise SystemExit(1)
+
+    actual = probe_media(args.media)
+    print(
+        f"valid: {actual['width']}x{actual['height']} "
+        f"{actual['video_codec']} {actual['pix_fmt']} "
+        f"{actual['fps']:.3f}fps {actual['duration']:.3f}s "
+        f"{actual['audio_codec']} stereo {actual['sample_rate']}Hz "
+        f"faststart sha256={sha256_file(args.media)}"
+    )
+
+
+if __name__ == "__main__":
+    main()
