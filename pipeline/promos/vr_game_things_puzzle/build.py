@@ -12,7 +12,7 @@ import subprocess
 import sys
 
 
-SHOT_KINDS = {"unity", "seedance", "title"}
+SHOT_KINDS = {"unity", "repository", "seedance", "title"}
 FORBIDDEN_CLAIMS = {
     "combat": r"\bcombat\b",
     "flight": r"\b(?:fly|flies|flying|flight)\b",

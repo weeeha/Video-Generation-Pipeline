@@ -12,16 +12,16 @@
 | Seedance final limit | Two 5-second 1080p full-model tasks |
 | API-key presence | Configured; value not printed |
 | ffmpeg version | 8.1 |
-| Unity capture status | |
+| Unity capture status | Repository-render fallback. Open-source MCP reported zero instances; official MCP targeted `/Users/nickv/VR-Creative-Hub/VR-Creative-Hub`, so that unrelated project was left untouched. |
 
 ## Authentic capture
 
 | Clip | Source type | Resolution | Duration | QA result |
 | --- | --- | --- | --- | --- |
-| `library.mp4` | | | | |
-| `grab.mp4` | | | | |
-| `snap.mp4` | | | | |
-| `operation.mp4` | | | | |
+| `library.mp4` | Repository hero render with restrained push-in | 1920x1080 | 3.0s | Pass; concept footage |
+| `grab.mp4` | Repository exploded render with restrained push-in | 1920x1080 | 5.0s | Pass; concept footage |
+| `snap.mp4` | Repository exploded-to-assembled crossfade | 1920x1080 | 5.0s | Pass as transition; concept footage |
+| `operation.mp4` | Repository hero render with restrained push-in | 1920x1080 | 4.0s | Pass; concept footage |
 
 ## Draft tasks
 
@@ -73,7 +73,7 @@ Score each category from 0-2. A draft must score at least 8/12 and pass every au
 
 ## Disclosure
 
-Prototype footage with Seedance cinematic visualization. Generated footage is
-used only to visualize interactions already implemented in the three-piece
-Apache vertical slice. It is not evidence of flight, combat, native hand
-tracking, additional playable pieces, or other playable models.
+Concept footage from repository renders with Seedance cinematic visualization.
+Generated footage is used only to visualize interactions already implemented
+in the three-piece Apache vertical slice. It is not evidence of flight, combat,
+native hand tracking, additional playable pieces, or other playable models.

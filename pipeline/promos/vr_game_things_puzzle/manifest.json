@@ -1,7 +1,7 @@
 {
   "title": "VR Game Things Puzzle",
   "tagline": "Build it. Then operate it.",
-  "disclosure": "Prototype footage with Seedance cinematic visualization.",
+  "disclosure": "Concept footage from repository renders with Seedance cinematic visualization.",
   "width": 1920,
   "height": 1080,
   "fps": 24,
@@ -10,17 +10,17 @@
     {
       "path": "output/vr-game-things-puzzle-promo/source/library.mp4",
       "duration": 3.0,
-      "kind": "unity"
+      "kind": "repository"
     },
     {
       "path": "output/vr-game-things-puzzle-promo/source/grab.mp4",
       "duration": 5.0,
-      "kind": "unity"
+      "kind": "repository"
     },
     {
       "path": "output/vr-game-things-puzzle-promo/source/snap.mp4",
       "duration": 5.0,
-      "kind": "unity"
+      "kind": "repository"
     },
     {
       "path": "output/vr-game-things-puzzle-promo/finals/final-assembly.mp4",
@@ -35,7 +35,7 @@
     {
       "path": "output/vr-game-things-puzzle-promo/source/operation.mp4",
       "duration": 4.0,
-      "kind": "unity"
+      "kind": "repository"
     },
     {
       "path": "output/vr-game-things-puzzle-promo/source/title.mp4",

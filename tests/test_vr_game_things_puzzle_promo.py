@@ -47,6 +47,17 @@ class PromoManifestTests(unittest.TestCase):
 
         self.assertIn("shot 1 has unsupported kind: imaginary", errors)
 
+    def test_manifest_accepts_disclosed_repository_render_fallback(self):
+        manifest = promo.load_manifest(MANIFEST)
+        manifest["shots"][0]["kind"] = "repository"
+        manifest["disclosure"] = (
+            "Concept footage from repository renders with Seedance cinematic visualization."
+        )
+
+        errors = promo.validate_manifest(manifest, REPO, require_files=False)
+
+        self.assertNotIn("shot 1 has unsupported kind: repository", errors)
+
     def test_timeline_duration_includes_transition_overlap(self):
         manifest = {
             "transition": 0.25,
@@ -78,14 +89,16 @@ class PromoManifestTests(unittest.TestCase):
     def test_missing_sources_are_reported_in_manifest_order(self):
         manifest = copy.deepcopy(promo.load_manifest(MANIFEST))
         manifest["shots"] = manifest["shots"][:2]
+        manifest["shots"][0]["path"] = "output/__missing_library.mp4"
+        manifest["shots"][1]["path"] = "output/__missing_grab.mp4"
 
         errors = promo.validate_manifest(manifest, REPO, require_files=True)
 
         self.assertEqual(
             errors[-2:],
             [
-                "shot 1 source is missing: output/vr-game-things-puzzle-promo/source/library.mp4",
-                "shot 2 source is missing: output/vr-game-things-puzzle-promo/source/grab.mp4",
+                "shot 1 source is missing: output/__missing_library.mp4",
+                "shot 2 source is missing: output/__missing_grab.mp4",
             ],
         )
 
