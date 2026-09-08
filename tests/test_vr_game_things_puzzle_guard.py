@@ -1,5 +1,5 @@
-import copy
 import json
+import multiprocessing
 import pathlib
 
 import pytest
@@ -42,6 +42,17 @@ def historical(stage, *, name, cost=0.60, fingerprint_suffix="a"):
     )
     value["event"] = "historical_generation"
     return value
+
+
+def reserve_in_process(ledger_path, candidate, ready, start, results):
+    ready.put(True)
+    start.wait()
+    try:
+        guard.reserve_request(pathlib.Path(ledger_path), candidate)
+    except ValueError as error:
+        results.put(("blocked", str(error)))
+    else:
+        results.put(("reserved", candidate["name"]))
 
 
 def test_rejects_a_fifth_draft():
@@ -94,6 +105,24 @@ def test_rejects_a_request_that_exceeds_the_spend_cap():
     ]
 
 
+def test_requires_an_estimated_cost_for_a_paid_reservation():
+    candidate = request()
+    del candidate["estimated_cost_usd"]
+
+    assert guard.validate_request(POLICY, [], candidate) == [
+        "estimated_cost_usd is required"
+    ]
+
+
+@pytest.mark.parametrize("cost", [0, -0.01, "NaN", "Infinity"])
+def test_rejects_non_positive_or_non_finite_estimated_cost(cost):
+    candidate = request(estimated_cost_usd=cost)
+
+    assert guard.validate_request(POLICY, [], candidate) == [
+        "estimated_cost_usd must be a finite positive number"
+    ]
+
+
 def test_valid_request_is_reserved_once_before_local_runner(tmp_path):
     policy_path = tmp_path / "generation-policy.json"
     ledger_path = tmp_path / "generation-ledger.json"
@@ -136,3 +165,78 @@ def test_blocked_request_never_calls_the_runner(tmp_path):
         guard.guarded_generate(candidate, ["local-seedance", "generate"], local_runner)
 
     assert calls == []
+
+
+def test_competing_reservations_keep_exactly_one_ledger_entry(tmp_path):
+    policy_path = tmp_path / "generation-policy.json"
+    ledger_path = tmp_path / "generation-ledger.json"
+    policy_path.write_text(json.dumps({"max_drafts": 1, "max_finals": 2, "max_usd": 12.0}))
+    ledger_path.write_text("[]\n")
+    context = multiprocessing.get_context("spawn")
+    ready = context.Queue()
+    start = context.Event()
+    results = context.Queue()
+    candidates = [
+        request(name=f"draft-{index}", prompt_sha256=str(index) * 64)
+        for index in range(2)
+    ]
+    processes = [
+        context.Process(
+            target=reserve_in_process,
+            args=(str(ledger_path), candidate, ready, start, results),
+        )
+        for candidate in candidates
+    ]
+    for process in processes:
+        process.start()
+    for _ in processes:
+        ready.get(timeout=10)
+    start.set()
+    for process in processes:
+        process.join(timeout=10)
+        assert process.exitcode == 0
+
+    outcomes = sorted(results.get(timeout=10)[0] for _ in processes)
+    assert outcomes == ["blocked", "reserved"]
+    ledger = json.loads(ledger_path.read_text())
+    assert len(ledger) == 1
+    assert ledger[0]["name"] in {candidate["name"] for candidate in candidates}
+
+
+def test_cli_derives_a_guarded_request_from_the_seedance_arguments():
+    candidate, seedance_argv = guard.request_from_seedance_args(
+        "final",
+        "1.89",
+        [
+            "generate",
+            "--prompt-file",
+            "pipeline/prompts/vr-game-things-puzzle/03-three-piece-assembly.md",
+            "--pack",
+            "vehicles/apache-v1-promo",
+            "--model",
+            "2.0",
+            "--resolution",
+            "1080p",
+            "--duration",
+            "5",
+            "--ratio",
+            "16:9",
+            "--no-audio",
+            "--name",
+            "vrgtp-f01-assembly",
+        ],
+    )
+
+    assert seedance_argv[0] == "generate"
+    assert candidate == {
+        "name": "vrgtp-f01-assembly",
+        "stage": "final",
+        "prompt_sha256": "25bbea4a11eaa976cb47bd30893a34596aee313c641cebfb43626ddfd5d3ef3f",
+        "model": "dreamina-seedance-2-0-260128",
+        "resolution": "1080p",
+        "duration": 5,
+        "ratio": "16:9",
+        "generate_audio": False,
+        "watermark": False,
+        "estimated_cost_usd": "1.89",
+    }

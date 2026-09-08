@@ -1,15 +1,18 @@
-"""Offline reservation guard for the VR Game Things Puzzle paid promo runs."""
+"""Reservation guard and executable wrapper for VR Game Things Puzzle runs."""
+import argparse
 import fcntl
 import hashlib
 import json
 import os
 import pathlib
 import subprocess
+import sys
 import tempfile
 from decimal import Decimal
 
 
 PROMO_DIR = pathlib.Path(__file__).resolve().parent
+REPO = PROMO_DIR.parents[2]
 POLICY_PATH = PROMO_DIR / "generation-policy.json"
 LEDGER_PATH = PROMO_DIR / "generation-ledger.json"
 FINGERPRINT_FIELDS = (
@@ -36,8 +39,20 @@ def _is_submission(record: dict) -> bool:
     return record.get("event") in SUBMISSION_EVENTS or "event" not in record
 
 
-def _cost(record: dict):
-    return record.get("estimated_cost_usd", 0)
+def _cost(record: dict) -> Decimal:
+    return Decimal(str(record["estimated_cost_usd"]))
+
+
+def _paid_cost(request: dict) -> tuple[Decimal | None, str | None]:
+    if "estimated_cost_usd" not in request:
+        return None, "estimated_cost_usd is required"
+    try:
+        cost = Decimal(str(request["estimated_cost_usd"]))
+    except Exception:
+        return None, "estimated_cost_usd must be a finite positive number"
+    if not cost.is_finite() or cost <= 0:
+        return None, "estimated_cost_usd must be a finite positive number"
+    return cost, None
 
 
 def validate_request(policy: dict, ledger: list[dict], request: dict) -> list[str]:
@@ -64,19 +79,24 @@ def validate_request(policy: dict, ledger: list[dict], request: dict) -> list[st
     else:
         errors.append(f"unsupported stage: {stage}")
 
-    total = sum((Decimal(str(_cost(record))) for record in submissions), Decimal())
-    projected = total + Decimal(str(_cost(request)))
-    limit = Decimal(str(policy["max_usd"]))
-    if projected > limit:
-        errors.append(
-            f"spend cap exceeded: USD {projected:.2f} > USD {limit:.2f}"
-        )
+    cost, cost_error = _paid_cost(request)
+    if cost_error:
+        errors.append(cost_error)
+    else:
+        total = sum((_cost(record) for record in submissions), Decimal())
+        projected = total + cost
+        limit = Decimal(str(policy["max_usd"]))
+        if projected > limit:
+            errors.append(
+                f"spend cap exceeded: USD {projected:.2f} > USD {limit:.2f}"
+            )
     return errors
 
 
-def _read_ledger(handle) -> list[dict]:
-    handle.seek(0)
-    content = handle.read().strip()
+def _read_ledger(ledger_path: pathlib.Path) -> list[dict]:
+    if not ledger_path.exists():
+        return []
+    content = ledger_path.read_text().strip()
     return json.loads(content) if content else []
 
 
@@ -92,16 +112,26 @@ def _replace_ledger(ledger_path: pathlib.Path, ledger: list[dict]) -> None:
     os.replace(temporary_path, ledger_path)
 
 
+def _lock_path(ledger_path: pathlib.Path) -> pathlib.Path:
+    return ledger_path.with_name(f"{ledger_path.name}.lock")
+
+
+def _with_ledger_lock(ledger_path: pathlib.Path):
+    lock_path = _lock_path(ledger_path)
+    lock_path.touch(exist_ok=True)
+    return lock_path.open("a+", encoding="utf-8")
+
+
 def _append_event(ledger_path: pathlib.Path, event: dict) -> None:
     ledger_path.parent.mkdir(parents=True, exist_ok=True)
-    with ledger_path.open("a+", encoding="utf-8") as handle:
-        fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+    with _with_ledger_lock(ledger_path) as lock_handle:
+        fcntl.flock(lock_handle.fileno(), fcntl.LOCK_EX)
         try:
-            ledger = _read_ledger(handle)
+            ledger = _read_ledger(ledger_path)
             ledger.append(event)
             _replace_ledger(ledger_path, ledger)
         finally:
-            fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+            fcntl.flock(lock_handle.fileno(), fcntl.LOCK_UN)
 
 
 def _reservation(request: dict) -> dict:
@@ -126,10 +156,10 @@ def reserve_request(ledger_path: pathlib.Path, request: dict) -> dict:
     policy_path = pathlib.Path(request.get("policy_path", ledger_path.with_name("generation-policy.json")))
     policy = json.loads(policy_path.read_text())
     ledger_path.parent.mkdir(parents=True, exist_ok=True)
-    with ledger_path.open("a+", encoding="utf-8") as handle:
-        fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+    with _with_ledger_lock(ledger_path) as lock_handle:
+        fcntl.flock(lock_handle.fileno(), fcntl.LOCK_EX)
         try:
-            ledger = _read_ledger(handle)
+            ledger = _read_ledger(ledger_path)
             errors = validate_request(policy, ledger, request)
             if errors:
                 raise ValueError("; ".join(errors))
@@ -138,7 +168,7 @@ def reserve_request(ledger_path: pathlib.Path, request: dict) -> dict:
             _replace_ledger(ledger_path, ledger)
             return record
         finally:
-            fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+            fcntl.flock(lock_handle.fileno(), fcntl.LOCK_UN)
 
 
 def guarded_generate(request: dict, argv: list[str], runner=subprocess.run) -> int:
@@ -161,3 +191,65 @@ def guarded_generate(request: dict, argv: list[str], runner=subprocess.run) -> i
     transition["returncode"] = result.returncode
     _append_event(ledger_path, transition)
     return result.returncode
+
+
+def request_from_seedance_args(stage: str, estimated_cost_usd: str, seedance_argv: list[str]) -> tuple[dict, list[str]]:
+    """Build the reserved fields from the exact general-CLI arguments."""
+    if str(REPO) not in sys.path:
+        sys.path.insert(0, str(REPO))
+    from pipeline import seedance
+
+    args = seedance.build_parser().parse_args(seedance_argv)
+    if args.cmd != "generate":
+        raise ValueError("guarded CLI only delegates seedance generate")
+    if args.dry_run:
+        raise ValueError("guarded CLI does not reserve dry-runs")
+    if bool(args.prompt) == bool(args.prompt_file):
+        raise ValueError("exactly one of --prompt / --prompt-file is required")
+    if not args.name:
+        raise ValueError("guarded CLI requires a stable --name")
+    if args.prompt_file:
+        prompt_bytes = pathlib.Path(args.prompt_file).read_bytes()
+        prompt = prompt_bytes.decode().strip()
+        prompt_sha256 = hashlib.sha256(prompt_bytes).hexdigest()
+    else:
+        prompt = args.prompt
+        prompt_sha256 = hashlib.sha256(prompt.encode()).hexdigest()
+    content, _ = seedance.build_content(args, prompt)
+    body = seedance.build_body(args, content)
+    return {
+        "name": args.name,
+        "stage": stage,
+        "prompt_sha256": prompt_sha256,
+        "model": body["model"],
+        "resolution": body["resolution"],
+        "duration": body["duration"],
+        "ratio": body["ratio"],
+        "generate_audio": body["generate_audio"],
+        "watermark": body["watermark"],
+        "estimated_cost_usd": estimated_cost_usd,
+    }, seedance_argv
+
+
+def build_cli_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description=__doc__)
+    commands = parser.add_subparsers(dest="command", required=True)
+    generate = commands.add_parser("generate", help="reserve then delegate one paid Seedance generation")
+    generate.add_argument("--stage", required=True, choices=("draft", "final"))
+    generate.add_argument("--estimated-cost-usd", required=True)
+    generate.add_argument("seedance_argv", nargs=argparse.REMAINDER,
+                          help="pass the complete seedance generate command after --")
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = build_cli_parser().parse_args(argv)
+    request, seedance_argv = request_from_seedance_args(
+        args.stage, args.estimated_cost_usd, seedance_argv=args.seedance_argv
+    )
+    command = [sys.executable, str(REPO / "pipeline/seedance.py"), *seedance_argv]
+    return guarded_generate(request, command)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

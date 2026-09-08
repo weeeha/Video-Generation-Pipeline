@@ -271,13 +271,15 @@ Confirm model, asset roles, five-second duration, 720p resolution, silent output
 
 - [ ] **Step 2: Submit the four draft tasks with unique names**
 
-Use these names and commands:
+Use these names and commands. The executable promo guard derives its reserved
+request from the exact Seedance arguments, records the estimated cost, and only
+then delegates to the general CLI:
 
 ```bash
-python3 pipeline/seedance.py generate --prompt-file pipeline/prompts/vr-game-things-puzzle/01-cockpit-approach.md --pack vehicles/apache-v1-promo --fast --resolution 720p --duration 5 --ratio 16:9 --no-audio --name vrgtp-d01-cockpit-approach
-python3 pipeline/seedance.py generate --prompt-file pipeline/prompts/vr-game-things-puzzle/02-magnetic-connection.md --pack vehicles/apache-v1-promo --fast --resolution 720p --duration 5 --ratio 16:9 --no-audio --name vrgtp-d02-magnetic-connection
-python3 pipeline/seedance.py generate --prompt-file pipeline/prompts/vr-game-things-puzzle/03-three-piece-assembly.md --pack vehicles/apache-v1-promo --fast --resolution 720p --duration 5 --ratio 16:9 --no-audio --name vrgtp-d03-three-piece-assembly
-python3 pipeline/seedance.py generate --prompt-file pipeline/prompts/vr-game-things-puzzle/04-hero-reveal.md --pack vehicles/apache-v1-promo --fast --resolution 720p --duration 5 --ratio 16:9 --no-audio --name vrgtp-d04-hero-reveal
+python3 pipeline/promos/vr_game_things_puzzle/guard.py generate --stage draft --estimated-cost-usd 0.60 -- generate --prompt-file pipeline/prompts/vr-game-things-puzzle/01-cockpit-approach.md --pack vehicles/apache-v1-promo --fast --resolution 720p --duration 5 --ratio 16:9 --no-audio --name vrgtp-d01-cockpit-approach
+python3 pipeline/promos/vr_game_things_puzzle/guard.py generate --stage draft --estimated-cost-usd 0.60 -- generate --prompt-file pipeline/prompts/vr-game-things-puzzle/02-magnetic-connection.md --pack vehicles/apache-v1-promo --fast --resolution 720p --duration 5 --ratio 16:9 --no-audio --name vrgtp-d02-magnetic-connection
+python3 pipeline/promos/vr_game_things_puzzle/guard.py generate --stage draft --estimated-cost-usd 0.60 -- generate --prompt-file pipeline/prompts/vr-game-things-puzzle/03-three-piece-assembly.md --pack vehicles/apache-v1-promo --fast --resolution 720p --duration 5 --ratio 16:9 --no-audio --name vrgtp-d03-three-piece-assembly
+python3 pipeline/promos/vr_game_things_puzzle/guard.py generate --stage draft --estimated-cost-usd 0.60 -- generate --prompt-file pipeline/prompts/vr-game-things-puzzle/04-hero-reveal.md --pack vehicles/apache-v1-promo --fast --resolution 720p --duration 5 --ratio 16:9 --no-audio --name vrgtp-d04-hero-reveal
 ```
 
 Move downloaded outputs to the `drafts/` directory without deleting the client state record.
@@ -333,11 +335,11 @@ python3 pipeline/seedance.py generate --prompt-file pipeline/prompts/vr-game-thi
 
 - [ ] **Step 3: Submit at most two finals**
 
-Use stable names `vrgtp-f01-assembly` and `vrgtp-f02-hero`. Reuse the exact accepted prompts and the Apache pack. Do not add a video reference unless an accepted draft contains essential motion that cannot be described; if video input becomes necessary, recalculate against the USD 12 cap before submission. Route any future paid submission through `guard.py`; it reserves the name and request fingerprint in the promo ledger before it delegates to the general CLI.
+Use stable names `vrgtp-f01-assembly` and `vrgtp-f02-hero`. Reuse the exact accepted prompts and the Apache pack. Do not add a video reference unless an accepted draft contains essential motion that cannot be described; if video input becomes necessary, recalculate against the USD 12 cap before submission. Route every paid submission through the executable `guard.py` path; it reserves the name and request fingerprint in the promo ledger before it delegates to the general CLI.
 
 ```bash
-python3 pipeline/seedance.py generate --prompt-file pipeline/prompts/vr-game-things-puzzle/03-three-piece-assembly.md --pack vehicles/apache-v1-promo --model 2.0 --resolution 1080p --duration 5 --ratio 16:9 --no-audio --name vrgtp-f01-assembly
-python3 pipeline/seedance.py generate --prompt-file pipeline/prompts/vr-game-things-puzzle/04-hero-reveal.md --pack vehicles/apache-v1-promo --model 2.0 --resolution 1080p --duration 5 --ratio 16:9 --no-audio --name vrgtp-f02-hero
+python3 pipeline/promos/vr_game_things_puzzle/guard.py generate --stage final --estimated-cost-usd 1.89 -- generate --prompt-file pipeline/prompts/vr-game-things-puzzle/03-three-piece-assembly.md --pack vehicles/apache-v1-promo --model 2.0 --resolution 1080p --duration 5 --ratio 16:9 --no-audio --name vrgtp-f01-assembly
+python3 pipeline/promos/vr_game_things_puzzle/guard.py generate --stage final --estimated-cost-usd 1.89 -- generate --prompt-file pipeline/prompts/vr-game-things-puzzle/04-hero-reveal.md --pack vehicles/apache-v1-promo --model 2.0 --resolution 1080p --duration 5 --ratio 16:9 --no-audio --name vrgtp-f02-hero
 ```
 
 - [ ] **Step 4: Verify final media**
