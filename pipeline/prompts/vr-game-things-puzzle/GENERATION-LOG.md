@@ -66,16 +66,16 @@ Score each category from 0-2. A draft must score at least 8/12 and pass every au
 
 | Name | Source concept | Task ID | Model | Status | Completion tokens | Estimated cost | Decision |
 | --- | --- | --- | --- | --- | ---: | ---: | --- |
-| `vrgtp-f01-assembly` | | | | | | | |
-| `vrgtp-f02-hero` | | | | | | | |
+| `vrgtp-f01-assembly` | `d03a` | `cgt-20260806150045-tkh2g` | `dreamina-seedance-2-0-260128` | Succeeded | 245,025 | USD 1.89 | Accept: readable three-piece assembly with stable Apache identity |
+| `vrgtp-f02-hero` | `d04a` | `cgt-20260806150110-zqxnc` | `dreamina-seedance-2-0-260128` | Succeeded | 245,025 | USD 1.89 | Accept: clean assembled-model reveal without battlefield action |
 
 ## Cost ledger
 
 | Stage | Successful tasks | Estimated subtotal |
 | --- | ---: | ---: |
 | Drafts | 7 | USD 4.27 |
-| Finals | | |
-| Total | 7 | USD 4.27 |
+| Finals | 2 | USD 3.77 |
+| Total | 9 | USD 8.04 |
 
 ## Export verification
 
