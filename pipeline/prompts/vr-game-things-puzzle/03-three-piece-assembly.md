@@ -1,0 +1,7 @@
+Image 1 defines the exact finished AH-64 Apache hero identity, proportions, materials, dark studio, and circular platform. Image 2 documents the prepared mechanical systems but does not define the number of playable pieces. Image 3 defines the assembled Quest prototype.
+
+The tabletop Apache remains fixed on its circular platform with every non-playable system already connected. Show exactly three large gray playable pieces completing the model in a clear authored sequence: first the cockpit seats into the front fuselage, then the single main rotor seats onto the central mast, then the single tail rotor seats onto the tail hub. Present one action at a time. Each connection uses precise restrained magnetic alignment, a thin cyan pulse, and a quick gray-to-finished material reveal. End with the completed model stable on the platform.
+
+Camera: one elegant three-quarter product view with a very slow 15-degree orbit, no cuts, no shake. Motion: calm mechanical precision, readable spacing, no pieces crossing through the model.
+
+Preserve the exact AH-64 Apache identity and proportions shown in the references. This is a tabletop VR engineering puzzle in a quiet dark blue-gray studio, not a battlefield. Exactly three pieces move: cockpit, one main rotor, and one tail rotor. Keep every other system already connected. Do not add pieces, extra rotors, weapons, hands, people, text, logos, enemies, explosions, flight, destruction, or camera shake. No watermark.

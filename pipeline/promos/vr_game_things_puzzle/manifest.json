@@ -1,0 +1,18 @@
+{
+  "title": "VR Game Things Puzzle",
+  "tagline": "Build it. Then operate it.",
+  "disclosure": "Concept footage from repository renders with Seedance cinematic visualization.",
+  "width": 1920,
+  "height": 1080,
+  "fps": 24,
+  "transition": 0.25,
+  "shots": [
+    {"path":"deliverables/vr-game-things-puzzle-promo/source/library.mp4","duration":3.0,"kind":"repository","has_audio":false,"source_assets":["library/vehicles/apache-v1-promo/refs/01-apache-studio.png"]},
+    {"path":"deliverables/vr-game-things-puzzle-promo/accepted/d02b-connection.mp4","duration":5.0,"kind":"seedance","has_audio":false,"source_assets":["pipeline/prompts/vr-game-things-puzzle/02-magnetic-connection.md"]},
+    {"path":"deliverables/vr-game-things-puzzle-promo/accepted/d03a-assembly.mp4","duration":5.0,"kind":"seedance","has_audio":false,"source_assets":["pipeline/prompts/vr-game-things-puzzle/03-three-piece-assembly.md"]},
+    {"path":"deliverables/vr-game-things-puzzle-promo/accepted/final-assembly.mp4","duration":5.0,"kind":"seedance","has_audio":false,"source_assets":["pipeline/prompts/vr-game-things-puzzle/03-three-piece-assembly.md"]},
+    {"path":"deliverables/vr-game-things-puzzle-promo/accepted/final-hero.mp4","duration":5.0,"kind":"seedance","has_audio":false,"source_assets":["pipeline/prompts/vr-game-things-puzzle/04-hero-reveal.md"]},
+    {"path":"deliverables/vr-game-things-puzzle-promo/source/operation.mp4","duration":4.0,"kind":"repository","has_audio":false,"source_assets":["library/vehicles/apache-v1-promo/refs/03-apache-assembled.png"]},
+    {"path":null,"duration":3.5,"kind":"title","has_audio":false,"source_assets":[]}
+  ]
+}

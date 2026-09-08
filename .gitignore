@@ -12,3 +12,6 @@ pipeline/state.json
 __pycache__/
 *.pyc
 .DS_Store
+
+# isolated feature worktrees
+.worktrees/
