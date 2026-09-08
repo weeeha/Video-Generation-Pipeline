@@ -1,6 +1,7 @@
 # VR Game Things Puzzle Seedance Promo Design
 
 **Date:** 2026-08-06
+**PR repair revision:** 2026-09-07
 **Status:** Approved
 **Primary deliverable:** One 25-30 second, 16:9, 1080p promotional video
 **Creative line:** Build it. Then operate it.
@@ -15,6 +16,77 @@ implemented three-piece AH-64 Apache vertical slice.
 The intended uses are portfolio presentation, early product pitching, and
 social sharing. The video must feel cinematic without presenting unimplemented
 features as working gameplay.
+
+## PR Repair Contract
+
+The pre-PR review found that the first completed edit was technically valid but
+not safe to publish. Two repository-render fallback shots exposed the source
+project's 13-system exploded view, the post-merge CLI default changed from
+Seedance 2.0 to 2.5, manifest copy did not drive the rendered slate, source
+audio could not survive assembly, paid-run limits were procedural rather than
+enforced, and the ignored delivery media could not be reproduced from a fresh
+checkout.
+
+The repair keeps the established creative direction and uses no new paid
+generation. It makes these changes before a pull request is opened:
+
+- replace the two 13-system fallback shots with the already accepted
+  `d02b-connection` and `d03a-assembly` Seedance clips;
+- retain only assembled-model repository renders where repository footage is
+  used, and classify every generated shot as `seedance` in the manifest;
+- pin historical final-generation instructions to `--model 2.0`; removing
+  `--fast` alone is no longer sufficient because the repository default is
+  Seedance 2.5;
+- render the title, tagline, and disclosure from manifest values using a
+  deterministic local slate generator rather than a pre-rendered `title.mp4`;
+- declare source-audio availability per shot, preserve and crossfade declared
+  source audio, substitute silence for shots without audio, and mix restrained
+  original mechanical ambience below the source timeline;
+- add a promo-specific paid-run guard that reserves stable task names before
+  submission, rejects duplicate prompt/configuration hashes, and blocks draft,
+  final, or projected-spend limits before it invokes the general Seedance CLI;
+- place the accepted inputs, final export, contact sheet, and hashes in a
+  tracked `deliverables/vr-game-things-puzzle-promo/` package so a fresh clone
+  can validate the manifest without relying on an ignored worktree; and
+- preserve the full incident record: seven drafts were actually submitted due
+  to the documented retry race, even though the designed maximum was four.
+
+The tracked delivery package contains only the media required to reproduce and
+review the accepted edit. Rejected clips remain excluded; their task IDs,
+decisions, and usage stay in the generation log.
+
+### Repair architecture
+
+`manifest.json` remains the single assembly contract. Each shot declares its
+durable path, duration, provenance kind, and whether source audio exists. The
+builder validates those declarations, generates a slate image from the three
+manifest copy fields with pinned Pillow and its bundled default font, builds
+matched video and audio timelines, mixes the mechanical bed, and emits the
+final MP4. A separate verifier checks the export's duration, dimensions, frame
+rate, codecs, pixel format, audio layout, fast-start placement, and SHA-256.
+
+The paid-run guard is separate from the deterministic assembler. It reads a
+small policy file and append-only ledger, performs all count, duplicate, and
+projected-cost checks, writes a reservation atomically, then delegates a single
+generation to `pipeline/seedance.py`. Existing completed task records seed the
+ledger, so the historical overrun is visible rather than erased. The repair
+does not call the guard or generation API because no new generation is needed.
+
+### Repair verification
+
+Tests must first demonstrate the current failures, then cover:
+
+- rejection of repository shots that use the known 13-system exploded assets;
+- manifest-driven slate pixels changing when title, tagline, or disclosure
+  changes;
+- preservation of declared source audio and silence substitution for silent
+  shots;
+- exact `--model 2.0` dry-run bodies for the historical final commands;
+- refusal of a fifth draft, third final, duplicate prompt/configuration, or a
+  task that could exceed the USD 12 cap;
+- fresh-checkout manifest validation using only tracked deliverables; and
+- automated media assertions for the rebuilt final, followed by a complete
+  human visual and audio review of the actual 29-second export.
 
 ## Sources of Truth
 
