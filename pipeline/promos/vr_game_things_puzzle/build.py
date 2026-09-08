@@ -11,6 +11,11 @@ import shlex
 import subprocess
 import sys
 
+try:
+    from pipeline.promos.vr_game_things_puzzle.slate import render_slate
+except ModuleNotFoundError:  # Supports running this file directly as a CLI.
+    from slate import render_slate
+
 
 SHOT_KINDS = {"unity", "repository", "seedance", "title"}
 FORBIDDEN_CLAIMS = {
@@ -53,6 +58,23 @@ def validate_manifest(manifest: dict, repo: pathlib.Path, require_files: bool = 
         kind = shot.get("kind")
         if kind not in SHOT_KINDS:
             errors.append(f"shot {index} has unsupported kind: {kind}")
+        if not isinstance(shot.get("has_audio"), bool):
+            errors.append(f"shot {index} has_audio must be Boolean")
+
+        path = shot.get("path")
+        if kind == "title":
+            if path is not None:
+                errors.append(f"shot {index} title must not have a path")
+        elif not isinstance(path, str) or not path.startswith(
+            "deliverables/vr-game-things-puzzle-promo/"
+        ):
+            errors.append(f"shot {index} source must use a durable deliverables path")
+
+        source_assets = shot.get("source_assets", [])
+        if kind == "repository" and any(
+            "exploded" in str(asset).lower() for asset in source_assets
+        ):
+            errors.append(f"shot {index} repository source asset must not be exploded")
 
     has_seedance = any(shot.get("kind") == "seedance" for shot in shots)
     disclosure = str(manifest.get("disclosure", ""))
@@ -68,6 +90,8 @@ def validate_manifest(manifest: dict, repo: pathlib.Path, require_files: bool = 
 
     if require_files:
         for index, shot in enumerate(shots, 1):
+            if shot.get("kind") == "title":
+                continue
             relative = pathlib.Path(shot.get("path", ""))
             if not (repo / relative).is_file():
                 errors.append(f"shot {index} source is missing: {relative}")
@@ -75,7 +99,10 @@ def validate_manifest(manifest: dict, repo: pathlib.Path, require_files: bool = 
 
 
 def build_ffmpeg_command(
-    manifest: dict, repo: pathlib.Path, output: pathlib.Path
+    manifest: dict,
+    repo: pathlib.Path,
+    output: pathlib.Path,
+    slate_path: pathlib.Path | None = None,
 ) -> list[str]:
     shots = manifest["shots"]
     width = manifest["width"]
@@ -83,10 +110,16 @@ def build_ffmpeg_command(
     fps = manifest["fps"]
     transition = float(manifest.get("transition", 0.0))
     total = timeline_duration(manifest)
+    slate_path = slate_path or output.with_suffix(".slate.png")
 
     command = ["ffmpeg", "-y"]
     for shot in shots:
-        command.extend(["-i", str(repo / shot["path"])])
+        if shot["kind"] == "title":
+            command.extend(
+                ["-loop", "1", "-framerate", str(fps), "-t", f"{float(shot['duration']):.3f}", "-i", str(slate_path)]
+            )
+        else:
+            command.extend(["-i", str(repo / shot["path"])])
     command.extend(
         [
             "-f",
@@ -101,6 +134,18 @@ def build_ffmpeg_command(
             f"{total:.3f}",
             "-i",
             "sine=frequency=55:sample_rate=48000",
+            "-f",
+            "lavfi",
+            "-t",
+            "0.16",
+            "-i",
+            "anoisesrc=color=white:amplitude=0.35:sample_rate=48000",
+            "-f",
+            "lavfi",
+            "-t",
+            "0.16",
+            "-i",
+            "anoisesrc=color=white:amplitude=0.35:sample_rate=48000",
         ]
     )
 
@@ -111,6 +156,17 @@ def build_ffmpeg_command(
             f"crop={width}:{height},fps={fps},format=yuv420p,"
             f"trim=duration={float(shot['duration']):.3f},setpts=PTS-STARTPTS[v{index}]"
         )
+        duration = float(shot["duration"])
+        if shot["has_audio"]:
+            filters.append(
+                f"[{index}:a]aresample=48000,aformat=channel_layouts=stereo,"
+                f"atrim=duration={duration:.3f},asetpts=PTS-STARTPTS[a{index}]"
+            )
+        else:
+            filters.append(
+                "anullsrc=channel_layout=stereo:sample_rate=48000,"
+                f"atrim=duration={duration:.3f},asetpts=PTS-STARTPTS[a{index}]"
+            )
 
     current = "v0"
     elapsed = float(shots[0]["duration"])
@@ -126,11 +182,25 @@ def build_ffmpeg_command(
 
     noise_index = len(shots)
     sine_index = noise_index + 1
+    impulse_one_index = sine_index + 1
+    impulse_two_index = impulse_one_index + 1
+    current_audio = "a0"
+    for index in range(1, len(shots)):
+        result = f"ax{index}"
+        filters.append(
+            f"[{current_audio}][a{index}]acrossfade=d={transition:.3f}:c1=tri:c2=tri[{result}]"
+        )
+        current_audio = result
+    filters.append(f"[{current_audio}]anull[source_audio]")
+
     filters.extend(
         [
             f"[{noise_index}:a]highpass=f=35,lowpass=f=1800,volume=0.40[noise]",
             f"[{sine_index}:a]volume=0.12[hum]",
-            "[noise][hum]amix=inputs=2:normalize=0,"
+            f"[{impulse_one_index}:a]highpass=f=700,lowpass=f=3600,adelay=3000|3000,volume=0.24[impulse1]",
+            f"[{impulse_two_index}:a]highpass=f=700,lowpass=f=3600,adelay=7750|7750,volume=0.20[impulse2]",
+            "[noise][hum][impulse1][impulse2]amix=inputs=4:normalize=0[ambience]",
+            "[source_audio][ambience]amix=inputs=2:normalize=0,"
             "alimiter=limit=0.7,"
             f"atrim=duration={total:.3f},asetpts=PTS-STARTPTS[aout]",
         ]
@@ -184,7 +254,9 @@ def main() -> None:
         parser.error("--output is required unless --validate-only is set")
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    command = build_ffmpeg_command(manifest, args.repo, args.output)
+    slate_path = args.output.with_suffix(".slate.png")
+    render_slate(manifest, slate_path)
+    command = build_ffmpeg_command(manifest, args.repo, args.output, slate_path)
     if args.print_command:
         print(shlex.join(command))
     subprocess.run(command, check=True)
