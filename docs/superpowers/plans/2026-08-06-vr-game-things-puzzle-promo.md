@@ -11,7 +11,7 @@
 ## Global Constraints
 
 - The paid Seedance generation cap is USD 12.
-- Submit no more than four 5-second 720p Fast drafts and two 5-second 1080p full-model finals.
+- Submit no more than four 5-second 720p Fast drafts and two 5-second 1080p Seedance 2.0 finals. Every final command must pass `--model 2.0`: `full` now resolves to Seedance 2.5.
 - Do not pass `--seed`; current official Seedance 2.0 documentation does not support it.
 - Use `--no-audio` for every Seedance task; the final soundtrack comes from authentic capture and original local sound design.
 - Show exactly three playable pieces: cockpit, main rotor, and tail rotor.
@@ -321,11 +321,24 @@ Use recorded draft token usage and the official 1080p no-video estimate of appro
 
 - [ ] **Step 2: Dry-run accepted final concepts**
 
-Remove `--fast`, set `--resolution 1080p`, retain five seconds, 16:9, silent output, no watermark, and no seed. Confirm the body uses `dreamina-seedance-2-0-260128`.
+Use the explicit Seedance 2.0 model flag; removing `--fast` alone is no longer
+safe because `full` now resolves to Seedance 2.5. Retain 1080p, five seconds,
+16:9, silent output, no watermark, and no seed. Confirm each body uses
+`dreamina-seedance-2-0-260128`.
+
+```bash
+python3 pipeline/seedance.py generate --prompt-file pipeline/prompts/vr-game-things-puzzle/03-three-piece-assembly.md --pack vehicles/apache-v1-promo --model 2.0 --resolution 1080p --duration 5 --ratio 16:9 --no-audio --name vrgtp-f01-assembly --dry-run
+python3 pipeline/seedance.py generate --prompt-file pipeline/prompts/vr-game-things-puzzle/04-hero-reveal.md --pack vehicles/apache-v1-promo --model 2.0 --resolution 1080p --duration 5 --ratio 16:9 --no-audio --name vrgtp-f02-hero --dry-run
+```
 
 - [ ] **Step 3: Submit at most two finals**
 
-Use stable names `vrgtp-f01-assembly` and `vrgtp-f02-hero`. Reuse the exact accepted prompts and the Apache pack. Do not add a video reference unless an accepted draft contains essential motion that cannot be described; if video input becomes necessary, recalculate against the USD 12 cap before submission.
+Use stable names `vrgtp-f01-assembly` and `vrgtp-f02-hero`. Reuse the exact accepted prompts and the Apache pack. Do not add a video reference unless an accepted draft contains essential motion that cannot be described; if video input becomes necessary, recalculate against the USD 12 cap before submission. Route any future paid submission through `guard.py`; it reserves the name and request fingerprint in the promo ledger before it delegates to the general CLI.
+
+```bash
+python3 pipeline/seedance.py generate --prompt-file pipeline/prompts/vr-game-things-puzzle/03-three-piece-assembly.md --pack vehicles/apache-v1-promo --model 2.0 --resolution 1080p --duration 5 --ratio 16:9 --no-audio --name vrgtp-f01-assembly
+python3 pipeline/seedance.py generate --prompt-file pipeline/prompts/vr-game-things-puzzle/04-hero-reveal.md --pack vehicles/apache-v1-promo --model 2.0 --resolution 1080p --duration 5 --ratio 16:9 --no-audio --name vrgtp-f02-hero
+```
 
 - [ ] **Step 4: Verify final media**
 

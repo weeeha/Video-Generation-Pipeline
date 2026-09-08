@@ -69,6 +69,19 @@ Score each category from 0-2. A draft must score at least 8/12 and pass every au
 | `vrgtp-f01-assembly` | `d03a` | `cgt-20260806150045-tkh2g` | `dreamina-seedance-2-0-260128` | Succeeded | 245,025 | USD 1.89 | Accept: readable three-piece assembly with stable Apache identity |
 | `vrgtp-f02-hero` | `d04a` | `cgt-20260806150110-zqxnc` | `dreamina-seedance-2-0-260128` | Succeeded | 245,025 | USD 1.89 | Accept: clean assembled-model reveal without battlefield action |
 
+### Historical Seedance 2.0 command pin
+
+The recorded final tasks used `dreamina-seedance-2-0-260128`. Any future
+dry-run or replay must explicitly pass `--model 2.0 --resolution 1080p
+--duration 5 --ratio 16:9 --no-audio`, because the current `full` alias now
+resolves to Seedance 2.5. This is a forward-looking instruction correction;
+it does not rewrite the seven-draft retry incident as a compliant planned run.
+
+```bash
+python3 pipeline/seedance.py generate --prompt-file pipeline/prompts/vr-game-things-puzzle/03-three-piece-assembly.md --pack vehicles/apache-v1-promo --model 2.0 --resolution 1080p --duration 5 --ratio 16:9 --no-audio --name vrgtp-f01-assembly --dry-run
+python3 pipeline/seedance.py generate --prompt-file pipeline/prompts/vr-game-things-puzzle/04-hero-reveal.md --pack vehicles/apache-v1-promo --model 2.0 --resolution 1080p --duration 5 --ratio 16:9 --no-audio --name vrgtp-f02-hero --dry-run
+```
+
 ## Cost ledger
 
 | Stage | Successful tasks | Estimated subtotal |
