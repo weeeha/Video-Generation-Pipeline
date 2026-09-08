@@ -1,7 +1,7 @@
 # VR Game Things Puzzle Seedance Promo Design
 
 **Date:** 2026-08-06
-**Status:** Approved for planning
+**Status:** Approved
 **Primary deliverable:** One 25-30 second, 16:9, 1080p promotional video
 **Creative line:** Build it. Then operate it.
 
