@@ -1,0 +1,7 @@
+Image 1 defines the exact completed AH-64 Apache hero identity, proportions, finished materials, dark engineering studio, circular tabletop platform, and lighting. Image 2 is only a mechanical-structure reference. Image 3 defines the simplified assembled Quest prototype.
+
+Show the completed tabletop Apache resting on the same circular platform. Begin in a dark three-quarter silhouette, then lift the cool workshop key light to reveal the exact finished model. The camera performs a slow controlled 20-degree orbit. The single main rotor and single tail rotor accelerate gently from rest while the helicopter itself remains fixed on the platform. Near the end, show one small restrained non-projectile demonstration flash at the model's weapon effect point, then hold on the completed model.
+
+Camera: premium product reveal, smooth slow orbit, stable horizon, shallow atmospheric depth but fully readable model. Lighting: cool blue-gray studio, restrained cyan platform rim, no dramatic battlefield lighting.
+
+Preserve the exact AH-64 Apache identity and proportions shown in the references. This is a tabletop VR engineering puzzle in a quiet dark blue-gray studio, not a battlefield. Only three pieces are playable: cockpit, main rotor, and tail rotor. Keep every system connected in this completed view. Do not add parts, rotors, projectiles, people, text, logos, enemies, explosions, flight, destruction, or camera shake. No watermark.
