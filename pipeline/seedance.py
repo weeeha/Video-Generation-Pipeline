@@ -302,6 +302,10 @@ def build_body(args, content):
         if mk != "full":
             die("--format is Seedance 2.5 only — 2.0-series models always output mp4")
         body["output_format"] = args.format
+    if args.flex:
+        if mk != "full":
+            die("--flex (offline tier, 50% price) is Seedance 2.5 only — the 2.0 series is default-priced")
+        body["service_tier"] = "flex"
     if args.seed is not None:
         body["seed"] = args.seed
     return body
@@ -476,6 +480,7 @@ def build_parser():
     g.add_argument("--duration", help="seconds — 4-30 on 2.5, 4-15 on the 2.0 series, or 'auto'/-1 for model-chosen (default 5; edit forces -1)")
     g.add_argument("--resolution", choices=["480p", "720p", "1080p", "4k"], help="default 1080p (720p on fast/mini); 4k is 2.0-full only; 2.5 1080p is 10-bit HEVC")
     g.add_argument("--fast", action="store_true", help="shorthand for --model fast (2.0-fast: cheaper, 720p max)")
+    g.add_argument("--flex", action="store_true", help="offline inference tier (service_tier=flex): 50%% of online price, higher daily throughput, slower turnaround; 2.5 only")
     g.add_argument("--seed", type=int, help="pin for reproducibility (same seed + inputs = same video)")
     g.add_argument("--no-audio", action="store_true", help="silent video (default generates native audio)")
     g.add_argument("--watermark", action="store_true")

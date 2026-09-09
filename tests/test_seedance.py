@@ -144,6 +144,24 @@ def test_first_frame_on_2_0_keeps_explicit_ratio(tmp_path):
     assert seedance.build_body(args, content)["ratio"] == "16:9"
 
 
+# ---- service tier ------------------------------------------------------------
+
+def test_flex_sets_service_tier_on_2_5():
+    assert body_for(["--flex"])["service_tier"] == "flex"
+
+def test_default_has_no_service_tier():
+    assert "service_tier" not in body_for([])
+
+def test_flex_rejected_on_2_0():
+    dies_with(["--model", "2.0", "--flex"], "2.5 only")
+
+def test_flex_rejected_on_2_0_fast():
+    dies_with(["--fast", "--flex"], "2.5 only")
+
+def test_flex_rejected_on_mini():
+    dies_with(["--model", "mini", "--flex"], "2.5 only")
+
+
 # ---- output format -----------------------------------------------------------
 
 def test_mov_output_format_on_2_5():

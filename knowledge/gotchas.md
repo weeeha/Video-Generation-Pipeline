@@ -13,8 +13,14 @@ API quirks + lessons from the PermitNav production run (June 2026). Sources:
 - **Seedance 2.5 costs ≈ +50% over 2.0** and has an **activation gate**: balance > USD 30,
   an AI Savings Plan ≥ the USD 30 tier, or a 2.5 resource pack — otherwise creates fail.
 - One 720p clip ≈ ~109k completion tokens (order of magnitude for budgeting; 2.0 numbers).
-- Iterate on `--fast` (or `--model mini`) at 720p; render finals on 2.5. Same seed + same
-  inputs is deterministic, so a good fast take can guide the final.
+- **Current policy (2026-09-08): generate on 2.5 only.** The prepaid Seedance 2.0 token packs
+  expired 2026-08-06, so every 2.0/fast/mini clip now bills pay-per-use against account balance.
+  Do not reach for `--fast` or `--model mini` to iterate cheaply, and ask before using
+  `--model 2.0` even for 4k. (The superseded advice was: iterate on fast at 720p, render finals
+  on 2.5.) Same seed + same inputs is still deterministic, so iterate on 2.5 at 480p/720p instead.
+- **Use `--flex` for anything not time-critical.** `service_tier=flex` is offline inference at
+  50% of the online price with higher daily throughput, in exchange for slower turnaround. It is
+  2.5-only, which puts a flex 2.5 clip at roughly 75% of a default-tier 2.0 clip.
 
 ## Hard restrictions
 

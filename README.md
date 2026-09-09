@@ -44,8 +44,8 @@ Requires `python3` with `requests`.
 # Text-to-Video: create → poll → download to output/cat-test.mp4
 python3 pipeline/seedance.py generate --prompt "A cat batting at a ball of yarn, cinematic close-up, soft window light. Quiet room tone, gentle purring." --name cat-test --duration 4 --resolution 720p
 
-# From a prompt file, fast model, vertical
-python3 pipeline/seedance.py generate --prompt-file pipeline/prompts/example-t2v.md --fast --ratio 9:16 --name vertical-test
+# From a prompt file, vertical, on the cheaper offline tier
+python3 pipeline/seedance.py generate --prompt-file pipeline/prompts/example-t2v.md --flex --ratio 9:16 --name vertical-test
 
 # R2V with library packs — character + location + camera move in one shot
 python3 pipeline/seedance.py generate --prompt-file my-scene.md --pack people/nova --pack places/loft --pack motion/dolly-in --name nova-loft
@@ -65,7 +65,8 @@ python3 pipeline/seedance.py cancel <task-id>
 
 Defaults: Seedance 2.5 (`dreamina-seedance-2-5-260628`), 1080p (10-bit HEVC on 2.5), 16:9,
 5s, native audio ON, last-frame capture ON (for chaining). `--model 2.0|fast|mini` selects
-the 2.0 series (`--fast` = shorthand for the fast model, 720p max, cheaper). 2.5 extras:
+the 2.0 series (`--fast` = shorthand for the fast model, 720p max), **currently off-limits:
+the prepaid 2.0 packs expired 2026-08-06, so those bill pay-per-use.** 2.5 extras:
 `--duration` up to 30s, `--task-type auto|edit|extend`, `--format mov`, audio-only
 references, up to 30 images + 10 videos + 10 audio per request. Edit/extend/first-frame
 tasks on 2.5 require `ratio: adaptive` — the client sets and enforces this for you.
@@ -85,6 +86,11 @@ workaround — in [library/README.md](library/README.md).
   <https://console.byteplus.com/finance> (BytePlus account, region ap-southeast-1).
 - Order of magnitude: one 720p 16:9 clip ≈ ~109k completion tokens (from the official docs).
   `seedance.py` prints `usage.completion_tokens` after every successful task.
-- `--dry-run` before spending; iterate on `--fast` or `--model mini` at 720p; 2.5 1080p for
-  finals. 2.5 costs ≈ +50% over 2.0 and needs the account gate (balance > USD 30, a savings
-  plan, or a 2.5 resource pack) — see knowledge/gotchas.md.
+- `--dry-run` before spending. **Stay on 2.5**: the prepaid 2.0 token packs expired
+  2026-08-06, so the 2.0 series now bills pay-per-use. Iterate at 480p/720p on 2.5 rather
+  than dropping to `--fast`.
+- `--flex` (`service_tier=flex`, 2.5 only) is offline inference at **50% of the online
+  price** with higher daily throughput and slower turnaround. Use it for anything not
+  time-critical: flex 2.5 lands around 75% of a default-tier 2.0 clip.
+- 2.5 costs ≈ +50% over 2.0 at list price and needs the account gate (balance > USD 30, a
+  savings plan, or a 2.5 resource pack) — see knowledge/gotchas.md.
