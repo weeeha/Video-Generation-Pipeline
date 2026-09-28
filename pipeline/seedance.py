@@ -12,11 +12,16 @@ Commands:
   wait       poll until terminal; downloads on success
   list       recent tasks (the API keeps 7 days)
   cancel     cancel a queued task / delete a finished record
+  log        manually add a spend row to the ledger (Nano Banana images, etc.)
+  report     spend summary from output/ledger.csv
+
+Every task is recorded in output/ledger.csv (tracked in git) with its actual
+billed tokens and an estimated USD cost from pipeline/pricing.json.
 
 Worked examples live in the repo README. Outputs land in output/<name>.mp4 plus
 output/<name>.last.png (the chaining frame) unless --no-last-frame.
 """
-import argparse, base64, json, os, pathlib, sys, time
+import argparse, base64, csv, json, os, pathlib, sys, time
 
 try:
     import requests
@@ -318,6 +323,71 @@ def redacted(body):
     return b
 
 
+# ---- spend ledger ---------------------------------------------------------------
+
+LEDGER_FILE = OUTPUT_DIR / "ledger.csv"
+PRICING_FILE = pathlib.Path(__file__).resolve().parent / "pricing.json"
+LEDGER_COLS = ["date", "task_id", "name", "source", "model", "resolution", "ratio",
+               "duration", "video_input", "status", "completion_tokens", "est_cost_usd", "note"]
+
+
+def rate_for(model, resolution, video_input):
+    """USD per 1M completion tokens from pipeline/pricing.json, or None if unknown."""
+    if not PRICING_FILE.exists():
+        return None
+    tier = (json.loads(PRICING_FILE.read_text()).get(model) or {}).get(resolution) or {}
+    return tier.get("video_input" if video_input else "no_video_input")
+
+
+def estimate_cost(model, resolution, video_input, tokens):
+    rate = rate_for(model, resolution, video_input)
+    if rate is None or not tokens:
+        return ""
+    return f"{rate * int(tokens) / 1e6:.3f}"
+
+
+def ledger_rows():
+    if not LEDGER_FILE.exists():
+        return []
+    with open(LEDGER_FILE, newline="") as f:
+        return list(csv.DictReader(f))
+
+
+def ledger_upsert(task_id, **fields):
+    """Append, or update the row with this task_id; empty values never overwrite."""
+    rows = ledger_rows()
+    for r in rows:
+        if task_id and r.get("task_id") == task_id:
+            r.update({k: str(v) for k, v in fields.items() if v not in ("", None)})
+            break
+    else:
+        row = {k: "" for k in LEDGER_COLS}
+        row["date"] = time.strftime("%Y-%m-%d %H:%M")
+        row["task_id"] = task_id
+        row.update({k: str(v) for k, v in fields.items() if v not in ("", None)})
+        rows.append(row)
+    OUTPUT_DIR.mkdir(exist_ok=True)
+    with open(LEDGER_FILE, "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=LEDGER_COLS, extrasaction="ignore")
+        w.writeheader()
+        w.writerows(rows)
+
+
+def ledger_finish(info, name):
+    """Record a terminal task: status, actual billed tokens, estimated USD."""
+    tid = info.get("id")
+    if not tid:
+        return
+    tokens = (info.get("usage") or {}).get("completion_tokens") or ""
+    row = next((r for r in ledger_rows() if r.get("task_id") == tid), {})
+    model = row.get("model") or info.get("model", "")
+    # only succeeded videos are billed (per the official pricing page)
+    cost = estimate_cost(model, row.get("resolution", ""), row.get("video_input") == "yes",
+                         tokens if info.get("status") == "succeeded" else 0)
+    ledger_upsert(tid, name=name or "", source=row.get("source") or "seedance", model=model,
+                  status=info.get("status", ""), completion_tokens=tokens, est_cost_usd=cost)
+
+
 # ---- state & lifecycle ---------------------------------------------------------
 
 def load_state():
@@ -350,6 +420,7 @@ def wait_task(tid, name, interval, timeout_s):
 
 def finish(info, name):
     """Report a terminal task; download video + chaining frame on success."""
+    ledger_finish(info, name)
     status = info.get("status")
     if status != "succeeded":
         err = info.get("error") or {}
@@ -395,6 +466,10 @@ def cmd_generate(args):
     tid = api_create(body)
     s[name] = {"id": tid, "model": body["model"], "created": time.strftime("%Y-%m-%d %H:%M:%S")}
     save_state(s)
+    ledger_upsert(tid, name=name, source="seedance", model=body["model"],
+                  resolution=body["resolution"], ratio=body["ratio"], duration=body["duration"],
+                  video_input="yes" if any("video_url" in c for c in content) else "no",
+                  status="created")
     print(f"[{name}] task {tid} created")
     if args.no_wait:
         print(f"poll later with: python3 pipeline/seedance.py wait {name}")
@@ -446,6 +521,64 @@ def cmd_list(args):
         ts = time.strftime("%m-%d %H:%M", time.localtime(t.get("created_at", 0)))
         tag = by_id.get(t.get("id"), "")
         print(f"  {t.get('id')}  {t.get('status', ''):9}  {ts}  {t.get('model', '')}  {tag}")
+
+
+def cmd_log(args):
+    """Manual ledger row for spend the client didn't see (Nano Banana images, etc.)."""
+    ledger_upsert(args.task_id or f"manual-{int(time.time())}",
+                  name=args.name or "", source=args.source, model=args.model or "",
+                  status="succeeded", completion_tokens=args.tokens or "",
+                  est_cost_usd=f"{args.cost:.3f}" if args.cost is not None else "",
+                  note=args.note or "")
+    print(f"logged -> {LEDGER_FILE.relative_to(REPO)}")
+
+
+def cmd_report(args):
+    rows = ledger_rows()
+    if not rows:
+        die(f"no ledger yet: {LEDGER_FILE.relative_to(REPO)} appears with the first generation")
+
+    def tok(r):
+        try:
+            return int(r.get("completion_tokens") or 0)
+        except ValueError:
+            return 0
+
+    def cost(r):
+        """Prefer a live recompute from tokens x current pricing.json; fall back to the stored estimate."""
+        if r.get("status") != "succeeded":
+            return 0.0
+        live = estimate_cost(r.get("model", ""), r.get("resolution", ""),
+                             r.get("video_input") == "yes", tok(r))
+        try:
+            return float(live or r.get("est_cost_usd") or 0)
+        except ValueError:
+            return 0.0
+
+    ok = [r for r in rows if r.get("status") == "succeeded"]
+    unpriced = [r for r in ok if not cost(r)]
+    print(f"{len(rows)} generation(s), {len(ok)} succeeded, {sum(tok(r) for r in ok):,} billed tokens")
+    line = f"estimated spend: ${sum(cost(r) for r in ok):.2f}"
+    if unpriced:
+        line += f"  ({len(unpriced)} succeeded row(s) have no price -> real total is higher)"
+    print(line)
+    by = {}
+    for r in ok:
+        key = r.get("model") or r.get("source") or "?"
+        c, t, u = by.get(key, (0, 0, 0.0))
+        by[key] = (c + 1, t + tok(r), u + cost(r))
+    print("by model:")
+    for key, (c, t, u) in sorted(by.items(), key=lambda kv: -kv[1][2]):
+        print(f"  {key:36} {c:3} clip(s) {t:>12,} tok  ${u:7.2f}")
+    bym = {}
+    for r in ok:
+        m = (r.get("date") or "")[:7]
+        c, u = bym.get(m, (0, 0.0))
+        bym[m] = (c + 1, u + cost(r))
+    print("by month:")
+    for m in sorted(bym):
+        print(f"  {m}  {bym[m][0]:3} clip(s)  ${bym[m][1]:7.2f}")
+    print("(list prices from pipeline/pricing.json; promos can bill lower - the BytePlus console is billing truth)")
 
 
 def cmd_cancel(args):
@@ -504,6 +637,19 @@ def build_parser():
     c = sub.add_parser("cancel", help="cancel a queued task / delete a finished record")
     c.add_argument("task", help="task id")
     c.set_defaults(fn=cmd_cancel)
+
+    lg = sub.add_parser("log", help="manually add a spend row to output/ledger.csv")
+    lg.add_argument("--source", required=True, help="what produced it, e.g. nano-banana")
+    lg.add_argument("--name", help="label, e.g. nova-casting-sheet")
+    lg.add_argument("--model", help="model id if known")
+    lg.add_argument("--cost", type=float, help="USD, actual or estimated")
+    lg.add_argument("--tokens", type=int, help="billed tokens if known")
+    lg.add_argument("--task-id", help="provider task id if any")
+    lg.add_argument("--note", help="free text, e.g. assumptions behind --cost")
+    lg.set_defaults(fn=cmd_log)
+
+    rp = sub.add_parser("report", help="spend summary from output/ledger.csv")
+    rp.set_defaults(fn=cmd_report)
 
     return ap
 

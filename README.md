@@ -22,11 +22,14 @@ library/              reference packs for R2V — one folder per reusable elemen
   motion/             camera moves / subject motion / VFX (clips as URLs in urls.txt)
   <cat>/_template/    copy to start a new pack; new categories are just new folders
 pipeline/
-  seedance.py         the client: generate / status / wait / list / cancel
+  seedance.py         the client: generate / status / wait / list / cancel / log / report
+  pricing.json        official USD per 1M tokens (BytePlus list prices; edit when rates change)
   prompts/            prompt files (sent verbatim — the whole file is the prompt)
                       example-r2v-25.md is the 2.5 sectioned format (timeline, scoped refs)
 output/               downloaded results (gitignored; URLs expire in 24h so the
                       client downloads immediately)
+  ledger.csv          spend ledger, tracked in git — every task with its actual billed
+                      tokens and estimated USD; see `seedance.py report`
 ```
 
 ## Setup
