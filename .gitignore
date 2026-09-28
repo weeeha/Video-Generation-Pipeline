@@ -1,5 +1,8 @@
 # secrets
 .env
+.env.local
+web/.vercel/
+pipeline/state.lock
 
 # generated media (URLs expire in 24h; client downloads here — curated finals can be force-added)
 output/*
