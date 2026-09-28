@@ -18,6 +18,7 @@ knowledge/            everything we know about Seedance 2.5 / 2.0
 library/              reference packs for R2V — one folder per reusable element
   people/             characters          (refs/ images + card.md)
   places/             locations           (refs/ images + card.md)
+  units/              machines / mechs    (refs/ images + card.md)
   motion/             camera moves / subject motion / VFX (clips as URLs in urls.txt)
   <cat>/_template/    copy to start a new pack; new categories are just new folders
 pipeline/
