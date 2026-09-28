@@ -9,6 +9,7 @@ refs *and* the same wording every time.
 library/
   people/<name>/      characters
   places/<name>/      locations & environments
+  units/<name>/       machines, mechs, vehicles
   motion/<name>/      camera moves, subject motion, VFX (clips live as URLs — see below)
   <category>/_template/   copy to start a new pack
 ```
@@ -71,6 +72,11 @@ full-body/costume, one alternate angle. 3–5 good refs beat 9 redundant ones.
 
 **places/** — a wide establishing shot locks layout + light direction; a detail shot locks
 materials and dressing. Re-state the palette in the prompt anyway — refs anchor, words steer.
+
+**units/** — machines drift in *gait* long before they drift in appearance, so every unit
+card carries a "canonical motion phrasing" line to paste into prompts verbatim. Refs need a
+hero shot for silhouette and surface, plus one shot with a figure in frame for scale —
+without it the model resizes the machine every take.
 
 **motion/** — cards describe the move in words (the canonical phrase matters more here than
 anywhere: "reference the slow dolly-in from Video 1 — camera moves forward over 5 seconds"),
