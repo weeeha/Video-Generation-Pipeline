@@ -5,6 +5,8 @@ a reusable CLI client, a **library/** of reference packs (consistent people, pla
 motion across videos), and the **knowledge/** that makes prompts and API calls work on
 the first try.
 
+![Contact sheet of the VR Game Things Puzzle promo: ten frames from a 28 s timeline, ending on the title slate](deliverables/vr-game-things-puzzle-promo/final/contact-sheet.png)
+
 Grown out of the proven PermitNav brand-film pipeline
 ([permit-nav-team/video-generation](https://github.com/permit-nav-team/video-generation)).
 
@@ -19,17 +21,27 @@ library/              reference packs for R2V — one folder per reusable elemen
   people/             characters          (refs/ images + card.md)
   places/             locations           (refs/ images + card.md)
   units/              machines / mechs    (refs/ images + card.md)
+  vehicles/           vehicles            (refs/ images + card.md)
+  robots/             robots              (refs/ images + card.md)
+  scenes/             scene start/end plates (refs/ images + card.md)
   motion/             camera moves / subject motion / VFX (clips as URLs in urls.txt)
   <cat>/_template/    copy to start a new pack; new categories are just new folders
 pipeline/
   seedance.py         the client: generate / status / wait / list / cancel / log / report
   pricing.json        official USD per 1M tokens (BytePlus list prices; edit when rates change)
+  runway.py           Runway client (Aleph 2.0, Act-Two), see the Runway section
+  post/               post tools: phone-screen compositing, seamless loops (see post/README.md)
+  promos/             per-promo manifests, guard, build and verify scripts
   prompts/            prompt files (sent verbatim — the whole file is the prompt)
                       example-r2v-25.md is the 2.5 sectioned format (timeline, scoped refs)
 output/               downloaded results (gitignored; URLs expire in 24h so the
                       client downloads immediately)
-  ledger.csv          spend ledger, tracked in git — every task with its actual billed
-                      tokens and estimated USD; see `seedance.py report`
+  ledger.csv          spend ledger, created on the first task and tracked in git: every
+                      task with its actual billed tokens and estimated USD; see
+                      `seedance.py report`
+deliverables/         finished promo outputs (accepted shots, final cut, contact sheet)
+tests/                offline pytest suite (no network)
+docs/superpowers/     specs and plans for the VR Game Things Puzzle promo
 ```
 
 ## Setup
@@ -40,7 +52,7 @@ The client resolves `ARK_API_KEY` in this order — no setup needed on Nick's Ma
 2. `.env` in this repo (see `.env.example`)
 3. `~/Documents/Claude/Projects/SeedDance/.env` ← the working key already lives here
 
-Requires `python3` with `requests`.
+Requires `python3`; `pip install -r requirements.txt` installs `requests`, `Pillow` (post tools and the promo slate) and `pytest`. The promo build also calls `ffmpeg`. Run the offline tests with `python3 -m pytest tests`.
 
 ## Quickstart
 
