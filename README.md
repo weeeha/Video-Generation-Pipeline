@@ -108,3 +108,18 @@ workaround — in [library/README.md](library/README.md).
 ## Runway (Aleph 2.0 and Act-Two)
 
 `pipeline/runway.py` is the Runway Dev API client, same shape as `seedance.py`: `--dry-run` prints the exact request and a cost estimate for free, local files are uploaded through Runway's ephemeral upload endpoint, outputs download immediately (URLs expire in 24 to 48 h). Key: `RUNWAYML_API_SECRET`, resolved the same way as `ARK_API_KEY`. Subcommands: `upload`, `aleph`, `act-two`, `status`, `wait`, `cancel`. Model notes and the film mapping live in `~/ClaudeCode Projects/Film Making/Runway-Aleph-ActTwo-Knowledge.md`; the test shot list in `~/ClaudeCode Projects/My Films/specs/runway-model-tests-shotlist.md`.
+
+<!-- BEGIN:generation-family -->
+## Related repos
+
+Generated film falls apart when a face, a jacket or a voice changes between shots. Each of these six repos handles one part of keeping it consistent.
+
+| Repo | What it does |
+|---|---|
+| [Film Design System](https://github.com/weeeha/Image-Generation-Pipeline-) | Keeps characters, props and settings consistent across image generations |
+| 3D Models (private) | Generates 3D models from text, with a viewer and gallery |
+| [Scene Builder 3D](https://github.com/weeeha/scene-builder-3d) | Blocks out shots in 3D before anything is generated |
+| [Video Generation Pipeline](https://github.com/weeeha/Video-Generation-Pipeline) | Seedance and Runway video generation with reusable reference packs |
+| [Audio Generation Pipeline](https://github.com/weeeha/Audio-Generation-Pipeline) | Local speech, voice cloning and sound effects |
+| Continuity Lab (private, in progress) | Finds and repairs inconsistencies between generated video shots |
+<!-- END:generation-family -->
