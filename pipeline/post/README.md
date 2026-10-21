@@ -40,6 +40,7 @@ catches enough light to break it. Restage the shot rather than fighting it.
 | `track_screen.py` | Finds the screen in every frame; use it to verify separability before compositing. |
 | `composite_screen.py` | Composites the screen asset onto the phone, using the black silhouette as alpha. |
 | `make_loop.py` | Cross-dissolves a clip's tail into its head to produce a seamless loop. |
+| `assemble_silo5.sh` | Cuts the three Mtl63 Silo No. 5 test shots together with 0.5 s dissolves on picture and audio. |
 
 ## Seamless loops
 
