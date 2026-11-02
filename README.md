@@ -1,5 +1,13 @@
 # Video Generation Pipeline
 
+**Problem.** AI video clips of the same person, place or camera move change from clip to clip, and API quirks cost real credits when a task fails or its output expires.
+
+**Idea.** Keep each reusable element as a reference pack (images plus a card with the canonical prompt wording) and attach packs to a request with `--pack`, so a person, a place and a camera move compose in one shot.
+
+**Built.** A Python CLI client for Seedance 2.5 and 2.0 (plus a Runway client), a library of reference packs, a knowledge base of API notes and prompt guides, a spend ledger, and an offline pytest suite. One finished promo is in `deliverables/`. 42 commits on 9 days, Aug 2 to Oct 30, 2026.
+
+**Decision.** Drafts run on the cheaper fast model at 720p and only finals render on Seedance 2.5, which costs about 50% more than 2.0. The same seed and inputs are deterministic, so a good fast take can guide the final.
+
 Seedance 2.5 / 2.0 (ByteDance, via BytePlus ModelArk) video generation for Nick's projects:
 a reusable CLI client, a **library/** of reference packs (consistent people, places,
 motion across videos), and the **knowledge/** that makes prompts and API calls work on
