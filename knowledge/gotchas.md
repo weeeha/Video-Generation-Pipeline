@@ -8,13 +8,22 @@ API quirks + lessons from the PermitNav production run (June 2026). Sources:
 - **Output URLs live 24 hours.** `video_url` / `last_frame_url` expire — download immediately
   (`seedance.py` does this automatically). A "successful" task you forgot to download is money gone.
 - **Task IDs live 7 days.** The List endpoint also only sees the past 7 days.
-- **No balance API.** Balance is console-only: <https://console.byteplus.com/finance>.
+- **Spend the 2.5 pack only. No pay-as-you-go** (Nick, 2026-11-06). The account bills a card
+  automatically for anything a pack does not cover: 2.0, `--fast`, `--model mini`. Three 2.0
+  previs clips on 2026-11-04 cost $1.83 that way. Use the default model (2.5) and nothing else.
+- **Pack status, read 2026-11-06:** `Dreamina-Seedance-2.5-pack-10000ktokens` has 5,322,766 of
+  10M tokens left (about 49 clips at 720p 5 s) and **expires 2026-11-10 23:59 UTC+8**. After
+  that there is no 2.5 credit, and without a new pack the activation gate below will probably
+  reject 2.5 creates. The 2.0 packs expired 2026-08-06.
+- **No balance API.** Read the pack's remaining capacity in the console (sign-in needed, Nick's
+  Chrome is signed in): <https://console.byteplus.com/finance/resource-package>. Card charges:
+  <https://console.byteplus.com/finance/overview>.
 - **`flex` (50% price) tier is NOT available on 2.0/2.0-fast** — `default` pricing only.
 - **Seedance 2.5 costs ≈ +50% over 2.0** and has an **activation gate**: balance > USD 30,
   an AI Savings Plan ≥ the USD 30 tier, or a 2.5 resource pack — otherwise creates fail.
 - One 720p clip ≈ ~109k completion tokens (order of magnitude for budgeting; 2.0 numbers).
-- Iterate on `--fast` (or `--model mini`) at 720p; render finals on 2.5. Same seed + same
-  inputs is deterministic, so a good fast take can guide the final.
+- Iterate on 2.5 at 720p and render finals on 2.5 at 1080p. `--fast` and `--model mini` bill
+  the card, so don't use them while the pack-only rule stands.
 
 ## Hard restrictions
 

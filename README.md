@@ -105,12 +105,14 @@ workaround — in [library/README.md](library/README.md).
 
 ## Costs & balance
 
-- There is **no balance endpoint** on the inference API. Check balance in the console:
-  <https://console.byteplus.com/finance> (BytePlus account, region ap-southeast-1).
+- **Billing is the Seedance 2.5 resource pack only; no pay-as-you-go** (Nick, 2026-11-06).
+  Anything outside the pack (2.0, fast, mini) bills a card, so use the default 2.5 model.
+  On 2026-11-06 the pack had 5.32M of 10M tokens left, expiring 2026-11-10 23:59 UTC+8.
+- There is **no balance endpoint** on the inference API. Read the pack in the console:
+  <https://console.byteplus.com/finance/resource-package> (BytePlus account, region ap-southeast-1).
 - Order of magnitude: one 720p 16:9 clip ≈ ~109k completion tokens (from the official docs).
   `seedance.py` prints `usage.completion_tokens` after every successful task.
-- `--dry-run` before spending; iterate on `--fast` or `--model mini` at 720p; 2.5 1080p for
-  finals. 2.5 costs ≈ +50% over 2.0 and needs the account gate (balance > USD 30, a savings
+- `--dry-run` before spending; iterate on 2.5 at 720p; 2.5 1080p for finals. 2.5 costs ≈ +50% over 2.0 and needs the account gate (balance > USD 30, a savings
   plan, or a 2.5 resource pack) — see knowledge/gotchas.md.
 
 ## Runway (Aleph 2.0 and Act-Two)
