@@ -1,0 +1,7 @@
+A simple general-purpose service robot in an abandoned restaurant, still working its shift. The diners at the set tables are dead. It has a cover on its back that opens to its batteries; a slim humanoid service unit with a worn cream-white chassis and a serving tray arm, moving with smooth precision. The restaurant: set tables with dead diners, plates, cups, and a broken, empty carafe; the diners clothed, seated upright, years dead, desiccated and still, no gore. Vines and moss reach in through the tall windows; the room is overgrown, not destroyed. Soft overcast daylight falls in green-tinted shafts and dust hangs in the still air. No living people in frame. Realistic cinematic dark adventure, muted desaturated palette, cool greens against warm dust, modern digital cinema, 35mm lens, shallow depth of field.
+
+[0:00-0:02] Medium shot. The robot leans over a dead diner's cup and tilts the broken carafe. Nothing comes out.
+
+[0:02-0:05] Slow push in to a close-up of the carafe's dry mouth above the empty cup; the robot holds the tilt a moment longer, then rights the carafe and waits beside the diner.
+
+Audio: quiet room tone of an overgrown interior, leaves brushing the window frames, a faint servo whir. The robot asks in French, in a soft synthetic voice, polite and warm, unaware anything is wrong: "Voulez-vous encore de l'eau?" A faint hollow tap of glass on the cup rim. No liquid sound, no music.

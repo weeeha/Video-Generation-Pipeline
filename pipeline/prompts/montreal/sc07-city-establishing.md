@@ -1,0 +1,5 @@
+Panoramic establishing shot of Montreal years after the collapse. A central downtown street has been taken by nature: trees growing through the asphalt, vines covering intact houses and tall towers. Behind the skyline stand the massive windowless blocks of data centers, thick cables strung between skyscrapers. A few windows glow where electricity still runs; most are dark. No people. Future Montreal, years after the collapse: the city is overgrown, not destroyed, and more advanced than ours, intact towers of new materials left untended. No crowds, no traffic. Realistic cinematic dark adventure, muted desaturated palette, modern digital cinema, anamorphic 35mm lens. Wide monumental composition, saturated vegetation greens against pale intact concrete and glass.
+
+[0:00-0:05] Slow aerial drone glide forward along the overgrown central street at rooftop height, the data centers looming larger on the horizon as the camera advances. A flock of birds lifts from the trees below.
+
+Audio: wind, a dense layer of birdsong and insects, leaves rustling, a faint electrical hum from one lit tower. No traffic, no music.
