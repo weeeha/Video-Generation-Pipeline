@@ -10,7 +10,7 @@ run_one() {
   n="mtl-$(basename "$f" .md | cut -d- -f1)"
   .venv/bin/python pipeline/seedance.py generate --prompt-file "$f" --name "$n" \
     --model full --duration 5 --resolution 720p --ratio 16:9 > "output/$n.log" 2>&1
-  echo "$n exit=$? $(grep -io 'completion_tokens[^,}]*' "output/$n.log" | tail -1)"
+  echo "$n exit=$? $(grep -o '[0-9,]* tokens' "output/$n.log" | tail -1)"
 }
 for f in "${files[@]}"; do
   while [ "$(jobs -rp | wc -l)" -ge 3 ]; do sleep 5; done

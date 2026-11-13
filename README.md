@@ -37,6 +37,8 @@ library/              reference packs for R2V — one folder per reusable elemen
 pipeline/
   seedance.py         the client: generate / status / wait / list / cancel / log / report
   pricing.json        official USD per 1M tokens (BytePlus list prices; edit when rates change)
+  spend-policy.json   which models may be used and when the resource pack expires; checked
+                      before every create (see Spend policy)
   runway.py           Runway client (Aleph 2.0, Act-Two), see the Runway section
   post/               post tools: phone-screen compositing, seamless loops (see post/README.md)
   promos/             per-promo manifests, guard, build and verify scripts
@@ -102,6 +104,19 @@ wording to use in prompts. `--pack people/nova` attaches nova's refs as `Image 1
 motion in one request is one flag each. Bare names work when unambiguous (`--pack nova`).
 Full rules — pack anatomy, numbering, the real-face restriction and the `asset://`
 workaround — in [library/README.md](library/README.md).
+
+## Spend policy
+
+`pipeline/spend-policy.json` is checked before every create. It lists the models that may be
+used and the resource pack's expiry date. A model outside the list, or the pack model after
+the expiry date, stops the run before anything is sent. `--dry-run` prints the verdict.
+`--pay-as-you-go` overrides the policy for one run and bills the card. After buying a new
+pack, set `tokens` and `expires` in that file.
+
+Parallel `generate` runs are safe: `state.json` and the ledger are written under a file lock
+(`pipeline/state.lock`). Downloads go to `<name>.part` and are renamed when complete, and a
+poll that hits a network error or a 429/5xx keeps waiting instead of ending the run. Runway
+tasks are recorded in the same ledger (`source` = `runway`, credits in `note`).
 
 ## Costs & balance
 

@@ -18,10 +18,15 @@ Commands:
 Every task is recorded in output/ledger.csv (tracked in git) with its actual
 billed tokens and an estimated USD cost from pipeline/pricing.json.
 
+pipeline/spend-policy.json is checked before every create: a model outside its
+allowed list, or the pack model after the pack's expiry date, stops the run
+unless --pay-as-you-go is given. Parallel runs are safe: state.json and the
+ledger are written under pipeline/state.lock.
+
 Worked examples live in the repo README. Outputs land in output/<name>.mp4 plus
 output/<name>.last.png (the chaining frame) unless --no-last-frame.
 """
-import argparse, base64, csv, json, os, pathlib, sys, time
+import argparse, base64, contextlib, csv, datetime, fcntl, json, os, pathlib, sys, time
 
 try:
     import requests
@@ -32,6 +37,12 @@ REPO = pathlib.Path(__file__).resolve().parent.parent
 OUTPUT_DIR = REPO / "output"
 LIBRARY_DIR = REPO / "library"
 STATE_FILE = pathlib.Path(__file__).resolve().parent / "state.json"
+LOCK_FILE = pathlib.Path(__file__).resolve().parent / "state.lock"
+POLICY_FILE = pathlib.Path(__file__).resolve().parent / "spend-policy.json"
+RETRY_WAIT = 5                               # seconds before a retry; grows with each attempt
+GET_ATTEMPTS = 4
+DOWNLOAD_ATTEMPTS = 3
+TRANSIENT_HTTP = {429, 500, 502, 503, 504}
 API = "https://ark.ap-southeast.bytepluses.com/api/v3"
 MODELS = {
     "full": "dreamina-seedance-2-5-260628",       # Seedance 2.5 (the default)
@@ -82,26 +93,66 @@ def headers():
 
 # ---- API ---------------------------------------------------------------------
 
+class Transient(Exception):
+    """A read that kept failing for reasons that usually pass (network, 429, 5xx)."""
+
+
+def api_get(url, what, **kw):
+    """GET with retries. Reads are free and idempotent, so a blip must not end a run that
+    is waiting on a paid task. Raises Transient when every attempt failed that way."""
+    err = ""
+    for attempt in range(GET_ATTEMPTS):
+        try:
+            r = requests.get(url, headers=headers(), timeout=60, **kw)
+        except requests.RequestException as e:
+            err = str(e)
+        else:
+            if r.status_code < 400:
+                return r.json()
+            err = f"HTTP {r.status_code}: {r.text[:500]}"
+            if r.status_code not in TRANSIENT_HTTP:
+                die(f"{what} failed {err}")
+        if attempt < GET_ATTEMPTS - 1:
+            time.sleep(RETRY_WAIT * (attempt + 1))
+    raise Transient(f"{what} failed after {GET_ATTEMPTS} tries: {err}")
+
+
 def api_create(body):
-    r = requests.post(f"{API}/contents/generations/tasks", json=body, headers=headers(), timeout=60)
+    """Create a task. Never retried: a create that timed out may still exist and bill."""
+    try:
+        r = requests.post(f"{API}/contents/generations/tasks", json=body, headers=headers(), timeout=60)
+    except requests.RequestException as e:
+        die(f"create did not complete ({e}). It is not retried, because the task may exist "
+            f"and bill: check with 'seedance.py list' before running it again")
     if r.status_code >= 400:
         die(f"create failed HTTP {r.status_code}: {r.text[:500]}")
     return r.json()["id"]
 
 
 def api_retrieve(tid):
-    r = requests.get(f"{API}/contents/generations/tasks/{tid}", headers=headers(), timeout=60)
-    if r.status_code >= 400:
-        die(f"retrieve failed HTTP {r.status_code}: {r.text[:500]}")
-    return r.json()
+    return api_get(f"{API}/contents/generations/tasks/{tid}", "retrieve")
 
 
 def download(url, path):
-    with requests.get(url, stream=True, timeout=300) as r:
-        r.raise_for_status()
-        with open(path, "wb") as f:
-            for chunk in r.iter_content(1 << 16):
-                f.write(chunk)
+    """Stream to <name>.part and rename when complete, so a file at the final name is
+    always a whole file. A dropped connection is retried; the .part is removed."""
+    path = pathlib.Path(path)
+    part = path.with_name(path.name + ".part")
+    for attempt in range(DOWNLOAD_ATTEMPTS):
+        try:
+            with requests.get(url, stream=True, timeout=300) as r:
+                r.raise_for_status()
+                with open(part, "wb") as f:
+                    for chunk in r.iter_content(1 << 16):
+                        f.write(chunk)
+            os.replace(part, path)
+            return
+        except requests.RequestException as e:
+            part.unlink(missing_ok=True)
+            if attempt == DOWNLOAD_ATTEMPTS - 1:
+                die(f"download of {path.name} failed after {DOWNLOAD_ATTEMPTS} tries ({e}). The URL "
+                    f"lives 24 h: retry with 'seedance.py status <name or task id>'")
+            time.sleep(RETRY_WAIT * (attempt + 1))
 
 
 # ---- assets ------------------------------------------------------------------
@@ -353,24 +404,39 @@ def ledger_rows():
         return list(csv.DictReader(f))
 
 
+@contextlib.contextmanager
+def locked():
+    """One writer at a time across processes, for state.json and the ledger. Both are
+    read, changed and rewritten whole, so parallel runs would drop each other's rows."""
+    with open(LOCK_FILE, "a") as fh:
+        fcntl.flock(fh, fcntl.LOCK_EX)
+        try:
+            yield
+        finally:
+            fcntl.flock(fh, fcntl.LOCK_UN)
+
+
 def ledger_upsert(task_id, **fields):
     """Append, or update the row with this task_id; empty values never overwrite."""
-    rows = ledger_rows()
-    for r in rows:
-        if task_id and r.get("task_id") == task_id:
-            r.update({k: str(v) for k, v in fields.items() if v not in ("", None)})
-            break
-    else:
-        row = {k: "" for k in LEDGER_COLS}
-        row["date"] = time.strftime("%Y-%m-%d %H:%M")
-        row["task_id"] = task_id
-        row.update({k: str(v) for k, v in fields.items() if v not in ("", None)})
-        rows.append(row)
-    OUTPUT_DIR.mkdir(exist_ok=True)
-    with open(LEDGER_FILE, "w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=LEDGER_COLS, extrasaction="ignore")
-        w.writeheader()
-        w.writerows(rows)
+    with locked():
+        rows = ledger_rows()
+        for r in rows:
+            if task_id and r.get("task_id") == task_id:
+                r.update({k: str(v) for k, v in fields.items() if v not in ("", None)})
+                break
+        else:
+            row = {k: "" for k in LEDGER_COLS}
+            row["date"] = time.strftime("%Y-%m-%d %H:%M")
+            row["task_id"] = task_id
+            row.update({k: str(v) for k, v in fields.items() if v not in ("", None)})
+            rows.append(row)
+        LEDGER_FILE.parent.mkdir(exist_ok=True)
+        tmp = LEDGER_FILE.with_name(LEDGER_FILE.name + ".tmp")
+        with open(tmp, "w", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=LEDGER_COLS, extrasaction="ignore")
+            w.writeheader()
+            w.writerows(rows)
+        os.replace(tmp, LEDGER_FILE)
 
 
 def ledger_finish(info, name):
@@ -384,8 +450,34 @@ def ledger_finish(info, name):
     # only succeeded videos are billed (per the official pricing page)
     cost = estimate_cost(model, row.get("resolution", ""), row.get("video_input") == "yes",
                          tokens if info.get("status") == "succeeded" else 0)
-    ledger_upsert(tid, name=name or "", source=row.get("source") or "seedance", model=model,
-                  status=info.get("status", ""), completion_tokens=tokens, est_cost_usd=cost)
+    # a row keeps the name it was created with: finishing by raw task id must not rename it
+    ledger_upsert(tid, name=row.get("name") or name or "", source=row.get("source") or "seedance",
+                  model=model, status=info.get("status", ""), completion_tokens=tokens, est_cost_usd=cost)
+
+
+# ---- spend policy ---------------------------------------------------------------
+
+def policy_violations(mk, now=None):
+    """Reasons the model key may not be used under pipeline/spend-policy.json; empty = allowed.
+    No policy file means no policy (a fresh clone on another machine)."""
+    if not POLICY_FILE.exists():
+        return []
+    policy = json.loads(POLICY_FILE.read_text())
+    out = []
+    allowed = policy.get("allowed_models")
+    if allowed is not None and mk not in allowed:
+        out.append(f"model '{mk}' is outside the spend policy (allowed: {', '.join(allowed) or 'none'}) "
+                   f"and bills pay-as-you-go")
+    pack = policy.get("pack") or {}
+    if pack.get("model") == mk and pack.get("expires"):
+        expires = datetime.datetime.fromisoformat(pack["expires"])
+        if expires.tzinfo is None:
+            expires = expires.replace(tzinfo=datetime.timezone.utc)
+        if (now or datetime.datetime.now(datetime.timezone.utc)) > expires:
+            out.append(f"the resource pack for '{mk}' expired {pack['expires']}: a create now bills "
+                       f"pay-as-you-go or fails the account gate (after buying a pack, update "
+                       f"pipeline/spend-policy.json)")
+    return out
 
 
 # ---- state & lifecycle ---------------------------------------------------------
@@ -395,13 +487,46 @@ def load_state():
 
 
 def save_state(s):
-    STATE_FILE.write_text(json.dumps(s, indent=2))
+    tmp = STATE_FILE.with_name(STATE_FILE.name + ".tmp")
+    tmp.write_text(json.dumps(s, indent=2))
+    os.replace(tmp, STATE_FILE)
+
+
+def update_state(name, **fields):
+    """Merge fields into one entry under the lock. Re-reads the file first, so entries
+    written by parallel runs survive, and re-creates this entry if one of them lost it."""
+    with locked():
+        s = load_state()
+        s.setdefault(name, {}).update(fields)
+        save_state(s)
+
+
+def reserve_name(name, model):
+    """Claim a --name before spending, so two runs cannot both take it."""
+    with locked():
+        s = load_state()
+        if name in s and s[name].get("status") not in ("failed", "cancelled", "expired"):
+            die(f"name '{name}' already tracks task {s[name].get('id') or '(being created)'} — "
+                f"pick another, or run: seedance.py status {name}")
+        s[name] = {"id": None, "model": model, "created": time.strftime("%Y-%m-%d %H:%M:%S"),
+                   "status": "creating"}
+        save_state(s)
+
+
+def release_name(name):
+    with locked():
+        s = load_state()
+        if s.get(name, {}).get("id") is None:
+            s.pop(name, None)
+            save_state(s)
 
 
 def resolve_task(ref):
     """Accept a task id or a --name label; returns (task_id, name-or-None)."""
     for name, rec in load_state().items():
         if ref in (name, rec.get("id")):
+            if not rec.get("id"):
+                die(f"'{name}' has no task id: its create never completed. Check 'seedance.py list'")
             return rec["id"], name
     return ref, None
 
@@ -409,12 +534,19 @@ def resolve_task(ref):
 def wait_task(tid, name, interval, timeout_s):
     start = time.time()
     while True:
-        info = api_retrieve(tid)
-        if info.get("status") in TERMINAL:
+        try:
+            info = api_retrieve(tid)
+        except Transient as e:
+            # the task runs on their side whatever happens to this connection
+            info = None
+            print(f"[{name}] poll failed ({e}); still waiting", flush=True)
+        if info and info.get("status") in TERMINAL:
             return info
         if time.time() - start > timeout_s:
-            die(f"[{name}] still {info.get('status')} after {int(timeout_s)}s — resume with: seedance.py wait {name}")
-        print(f"[{name}] {info.get('status')} … {int(time.time() - start)}s", flush=True)
+            seen = info.get("status") if info else "unreachable"
+            die(f"[{name}] still {seen} after {int(timeout_s)}s — resume with: seedance.py wait {name}")
+        if info:
+            print(f"[{name}] {info.get('status')} … {int(time.time() - start)}s", flush=True)
         time.sleep(interval)
 
 
@@ -431,13 +563,14 @@ def finish(info, name):
     c = info.get("content") or {}
     video = OUTPUT_DIR / f"{name}.mp4"
     if video.exists():
-        line = f"[{name}] succeeded — already downloaded: {video.relative_to(REPO)}"
+        line = f"[{name}] succeeded — already downloaded: {pretty(str(video))}"
     else:
         download(c["video_url"], video)
-        line = f"[{name}] succeeded -> {video.relative_to(REPO)}"
-        if c.get("last_frame_url"):
-            download(c["last_frame_url"], OUTPUT_DIR / f"{name}.last.png")
-            line += f" (+ {name}.last.png for chaining)"
+        line = f"[{name}] succeeded -> {pretty(str(video))}"
+    last = OUTPUT_DIR / f"{name}.last.png"
+    if c.get("last_frame_url") and not last.exists():
+        download(c["last_frame_url"], last)
+        line += f" (+ {name}.last.png for chaining)"
     usage = info.get("usage") or {}
     if usage.get("completion_tokens"):
         line += f" · {usage['completion_tokens']:,} tokens"
@@ -457,15 +590,30 @@ def cmd_generate(args):
     body = build_body(args, content)
     for line in labels:
         print(" ", line)
+    violations = policy_violations(model_key(args))
     if args.dry_run:
+        print("spend policy: " + ("BLOCKED" if violations else "ok"))
+        for v in violations:
+            print("  -", v)
         print(json.dumps(redacted(body), indent=2))
         return
-    s = load_state()
-    if name in s and s[name].get("status") not in ("failed", "cancelled", "expired"):
-        die(f"name '{name}' already tracks task {s[name]['id']} — pick another, or run: seedance.py status {name}")
-    tid = api_create(body)
-    s[name] = {"id": tid, "model": body["model"], "created": time.strftime("%Y-%m-%d %H:%M:%S")}
-    save_state(s)
+    if violations:
+        reasons = "\n  - ".join(violations)
+        if not args.pay_as_you_go:
+            die(f"blocked by the spend policy (pipeline/spend-policy.json):\n  - {reasons}\n"
+                f"Override for this one run with --pay-as-you-go.")
+        print(f"spend policy overridden by --pay-as-you-go:\n  - {reasons}")
+    video = OUTPUT_DIR / f"{name}.mp4"
+    if video.exists():
+        die(f"{pretty(str(video))} already exists — pick another --name (a new task would be "
+            f"paid for and its download skipped)")
+    reserve_name(name, body["model"])
+    try:
+        tid = api_create(body)
+    except BaseException:
+        release_name(name)
+        raise
+    update_state(name, id=tid, status="created")
     ledger_upsert(tid, name=name, source="seedance", model=body["model"],
                   resolution=body["resolution"], ratio=body["ratio"], duration=body["duration"],
                   video_input="yes" if any("video_url" in c for c in content) else "no",
@@ -475,9 +623,7 @@ def cmd_generate(args):
         print(f"poll later with: python3 pipeline/seedance.py wait {name}")
         return
     info = wait_task(tid, name, args.interval, args.timeout)
-    s = load_state()
-    s[name]["status"] = info.get("status")
-    save_state(s)
+    update_state(name, id=tid, status=info.get("status"))
     if finish(info, name) != "succeeded":
         sys.exit(1)
 
@@ -488,9 +634,7 @@ def cmd_status(args):
     st = info.get("status")
     if st in TERMINAL:
         if name:
-            s = load_state()
-            s[name]["status"] = st
-            save_state(s)
+            update_state(name, id=tid, status=st)
         finish(info, name or tid)
     else:
         print(f"[{name or tid}] {st}")
@@ -500,9 +644,7 @@ def cmd_wait(args):
     tid, name = resolve_task(args.task)
     info = wait_task(tid, name or tid, args.interval, args.timeout)
     if name:
-        s = load_state()
-        s[name]["status"] = info.get("status")
-        save_state(s)
+        update_state(name, id=tid, status=info.get("status"))
     if finish(info, name or tid) != "succeeded":
         sys.exit(1)
 
@@ -511,10 +653,7 @@ def cmd_list(args):
     params = {"page_num": 1, "page_size": args.limit}
     if args.status:
         params["filter.status"] = args.status
-    r = requests.get(f"{API}/contents/generations/tasks", headers=headers(), params=params, timeout=60)
-    if r.status_code >= 400:
-        die(f"list failed HTTP {r.status_code}: {r.text[:300]}")
-    d = r.json()
+    d = api_get(f"{API}/contents/generations/tasks", "list", params=params)
     by_id = {rec.get("id"): n for n, rec in load_state().items()}
     print(f"{d.get('total', 0)} task(s) in the last 7 days")
     for t in d.get("items") or []:
@@ -562,22 +701,28 @@ def cmd_report(args):
     if unpriced:
         line += f"  ({len(unpriced)} succeeded row(s) have no price -> real total is higher)"
     print(line)
+    def money(usd, missing):
+        """A total is only a number when every row behind it has a price."""
+        if not missing:
+            return f"${usd:7.2f}"
+        return f"${usd:7.2f} + {missing} with no price" if usd else f"no price ({missing} clip(s))"
+
     by = {}
     for r in ok:
         key = r.get("model") or r.get("source") or "?"
-        c, t, u = by.get(key, (0, 0, 0.0))
-        by[key] = (c + 1, t + tok(r), u + cost(r))
+        c, t, u, n = by.get(key, (0, 0, 0.0, 0))
+        by[key] = (c + 1, t + tok(r), u + cost(r), n + (not cost(r)))
     print("by model:")
-    for key, (c, t, u) in sorted(by.items(), key=lambda kv: -kv[1][2]):
-        print(f"  {key:36} {c:3} clip(s) {t:>12,} tok  ${u:7.2f}")
+    for key, (c, t, u, n) in sorted(by.items(), key=lambda kv: -kv[1][2]):
+        print(f"  {key:36} {c:3} clip(s) {t:>12,} tok  {money(u, n)}")
     bym = {}
     for r in ok:
         m = (r.get("date") or "")[:7]
-        c, u = bym.get(m, (0, 0.0))
-        bym[m] = (c + 1, u + cost(r))
+        c, u, n = bym.get(m, (0, 0.0, 0))
+        bym[m] = (c + 1, u + cost(r), n + (not cost(r)))
     print("by month:")
     for m in sorted(bym):
-        print(f"  {m}  {bym[m][0]:3} clip(s)  ${bym[m][1]:7.2f}")
+        print(f"  {m}  {bym[m][0]:3} clip(s)  {money(bym[m][1], bym[m][2])}")
     print("(list prices from pipeline/pricing.json; promos can bill lower - the BytePlus console is billing truth)")
 
 
@@ -614,7 +759,8 @@ def build_parser():
     g.add_argument("--watermark", action="store_true")
     g.add_argument("--no-last-frame", action="store_true", help="skip last-frame capture (disables chaining)")
     g.add_argument("--no-wait", action="store_true", help="create only; poll later with 'wait'")
-    g.add_argument("--dry-run", action="store_true", help="print the request body and exit — spends nothing")
+    g.add_argument("--dry-run", action="store_true", help="print the spend-policy verdict and the request body, then exit — spends nothing")
+    g.add_argument("--pay-as-you-go", action="store_true", help="override pipeline/spend-policy.json for this one run (a model outside the allowed list, or an expired pack): it bills the card")
     g.add_argument("--interval", type=int, default=20, help="poll interval seconds")
     g.add_argument("--timeout", type=int, default=2400, help="poll timeout seconds")
     g.set_defaults(fn=cmd_generate)
@@ -656,7 +802,10 @@ def build_parser():
 
 def main():
     args = build_parser().parse_args()
-    args.fn(args)
+    try:
+        args.fn(args)
+    except Transient as e:
+        die(str(e))
 
 
 if __name__ == "__main__":

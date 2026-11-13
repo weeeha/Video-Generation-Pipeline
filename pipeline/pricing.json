@@ -1,12 +1,18 @@
 {
-  "_source": "https://docs.byteplus.com/en/docs/ModelArk/1544106 (page dated 2026-08-20, fetched 2026-08-23)",
+  "_source": "https://docs.byteplus.com/en/docs/ModelArk/1544106 (2.0 and 2.0-fast: page dated 2026-08-20, fetched 2026-08-23; 2.5 and 2.0-mini: page dated 2026-11-12, read 2026-11-12)",
   "_unit": "USD per 1M completion_tokens, online inference, LIST prices (promos can bill lower)",
   "_notes": [
     "cost = usage.completion_tokens x rate / 1M; only succeeded videos are billed",
     "video_input = request contained reference/input video (cheaper rate applies)",
     "promo: 2.0-fast billed at 75% of list 2026-08-07 .. 2026-09-07 (UTC+8)",
-    "sanity check from official examples: 720p 16:9 5s ~ 109k tokens -> $0.76 full / $0.60 fast"
+    "sanity check from official examples: 720p 16:9 5s ~ 109k tokens -> $0.76 full / $0.60 fast",
+    "clips paid from a resource pack are prepaid: their USD here is the list-price equivalent, not a card charge"
   ],
+  "dreamina-seedance-2-5-260628": {
+    "480p": { "no_video_input": 10.7, "video_input": 6.4 },
+    "720p": { "no_video_input": 10.7, "video_input": 6.4 },
+    "1080p": { "no_video_input": 11.7, "video_input": 7.0 }
+  },
   "dreamina-seedance-2-0-260128": {
     "480p": { "no_video_input": 7.0, "video_input": 4.3 },
     "720p": { "no_video_input": 7.0, "video_input": 4.3 },
@@ -16,5 +22,9 @@
   "dreamina-seedance-2-0-fast-260128": {
     "480p": { "no_video_input": 5.6, "video_input": 3.3 },
     "720p": { "no_video_input": 5.6, "video_input": 3.3 }
+  },
+  "dreamina-seedance-2-0-mini-260615": {
+    "480p": { "no_video_input": 3.5, "video_input": 2.1 },
+    "720p": { "no_video_input": 3.5, "video_input": 2.1 }
   }
 }
