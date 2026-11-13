@@ -1,0 +1,11 @@
+{
+  "_about": "Enforced by seedance.py before every create. Rule (Nick, 2026-11-06): spend the Seedance 2.5 resource pack only, no pay-as-you-go. --dry-run prints the verdict; --pay-as-you-go overrides it for one run.",
+  "_model_keys": "full = Seedance 2.5, 2.0, fast, mini (the --model choices)",
+  "allowed_models": ["full"],
+  "pack": {
+    "model": "full",
+    "tokens": 10000000,
+    "expires": "2026-11-10T23:59:00+08:00",
+    "_note": "After buying a new pack, set tokens and expires from console.byteplus.com/finance/resource-package. While this date is in the past, 2.5 creates are blocked."
+  }
+}

@@ -27,6 +27,11 @@ try:
 except ImportError:
     sys.exit("needs the 'requests' package: python3 -m pip install requests")
 
+# Shared plumbing lives in seedance.py: the spend ledger, the cross-process file lock and
+# the retry settings. Read through the module so a run sees one ledger and one lock.
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import seedance  # noqa: E402
+
 BASE = "https://api.dev.runwayml.com/v1"
 VERSION = "2024-11-06"
 HERE = pathlib.Path(__file__).resolve().parent
@@ -60,15 +65,33 @@ def headers():
 
 
 def api(method, path, body=None):
-    r = requests.request(method, f"{BASE}{path}", headers=headers(),
-                         data=json.dumps(body) if body is not None else None, timeout=60)
-    try:
-        payload = r.json()
-    except ValueError:
-        payload = {"raw": r.text[:500]}
-    if r.status_code >= 400:
-        die(f"HTTP {r.status_code} on {method} {path}: {json.dumps(payload)[:800]}")
-    return payload
+    """GETs are free and idempotent, so they retry through network errors, 429 and 5xx and
+    raise seedance.Transient when every attempt failed that way. Anything else is sent once:
+    a create that timed out may still exist and cost credits."""
+    attempts = seedance.GET_ATTEMPTS if method == "GET" else 1
+    err = ""
+    for attempt in range(attempts):
+        try:
+            r = requests.request(method, f"{BASE}{path}", headers=headers(),
+                                 data=json.dumps(body) if body is not None else None, timeout=60)
+        except requests.RequestException as e:
+            if method != "GET":
+                die(f"{method} {path} did not complete ({e}). It is not retried, because the task "
+                    f"may exist and cost credits: check the Runway dashboard before running it again")
+            err = str(e)
+        else:
+            try:
+                payload = r.json()
+            except ValueError:
+                payload = {"raw": r.text[:500]}
+            if r.status_code < 400:
+                return payload
+            err = f"HTTP {r.status_code} on {method} {path}: {json.dumps(payload)[:800]}"
+            if method != "GET" or r.status_code not in seedance.TRANSIENT_HTTP:
+                die(err)
+        if attempt < attempts - 1:
+            time.sleep(seedance.RETRY_WAIT * (attempt + 1))
+    raise seedance.Transient(f"{method} {path} failed after {attempts} tries: {err}")
 
 
 # ---------- state ----------
@@ -77,7 +100,17 @@ def load_state():
 
 
 def save_state(s):
-    STATE.write_text(json.dumps(s, indent=1))
+    tmp = STATE.with_name(STATE.name + ".tmp")
+    tmp.write_text(json.dumps(s, indent=1))
+    os.replace(tmp, STATE)
+
+
+def remember(kind, key, value):
+    """Add one task or upload to runway-state.json under the shared lock."""
+    with seedance.locked():
+        st = load_state()
+        st[kind][key] = value
+        save_state(st)
 
 
 # ---------- media helpers ----------
@@ -114,8 +147,7 @@ def upload(path: str, dry: bool = False) -> str:
         r = requests.post(grant["uploadUrl"], data=grant.get("fields", {}), files={"file": (p.name, fh, mime)}, timeout=600)
     if r.status_code >= 400:
         die(f"upload POST failed HTTP {r.status_code}: {r.text[:400]}")
-    st["uploads"][str(p.resolve())] = {"uri": grant["runwayUri"], "t": time.time()}
-    save_state(st)
+    remember("uploads", str(p.resolve()), {"uri": grant["runwayUri"], "t": time.time()})
     print(f"  uploaded {p.name} -> {grant['runwayUri']}")
     return grant["runwayUri"]
 
@@ -136,13 +168,25 @@ def read_prompt(args) -> str | None:
 
 # ---------- task lifecycle ----------
 def download(url: str, dest: pathlib.Path) -> pathlib.Path:
+    """Stream to <name>.part and rename when complete, so a file at the final name is always
+    a whole file. A dropped connection is retried; the .part is removed."""
     dest.parent.mkdir(parents=True, exist_ok=True)
-    with requests.get(url, stream=True, timeout=600) as r:
-        r.raise_for_status()
-        with dest.open("wb") as fh:
-            for chunk in r.iter_content(1 << 20):
-                fh.write(chunk)
-    return dest
+    part = dest.with_name(dest.name + ".part")
+    for attempt in range(seedance.DOWNLOAD_ATTEMPTS):
+        try:
+            with requests.get(url, stream=True, timeout=600) as r:
+                r.raise_for_status()
+                with part.open("wb") as fh:
+                    for chunk in r.iter_content(1 << 20):
+                        fh.write(chunk)
+            os.replace(part, dest)
+            return dest
+        except requests.RequestException as e:
+            part.unlink(missing_ok=True)
+            if attempt == seedance.DOWNLOAD_ATTEMPTS - 1:
+                die(f"download of {dest.name} failed after {seedance.DOWNLOAD_ATTEMPTS} tries ({e}). "
+                    f"Output URLs expire in 24 to 48 h: retry with 'runway.py status <task-id>'")
+            time.sleep(seedance.RETRY_WAIT * (attempt + 1))
 
 
 def ext_for(url: str, fmt: str) -> str:
@@ -154,8 +198,19 @@ def ext_for(url: str, fmt: str) -> str:
     return f".{m.group(1)}" if m else ".mp4"
 
 
-def finish(task: dict, name: str, out_dir: pathlib.Path, fmt: str = "mp4"):
+def record(task: dict, name: str, model: str):
+    """One row per terminal task in the shared spend ledger (1 credit = $0.01)."""
+    credits = (task.get("cost") or {}).get("credits")
+    seedance.ledger_upsert(task["id"], name=name, source="runway", model=model,
+                           status=task["status"].lower(),
+                           est_cost_usd=f"{credits / 100:.3f}" if credits is not None else "",
+                           note=f"{credits} credits" if credits is not None else "")
+
+
+def finish(task: dict, name: str, out_dir: pathlib.Path, fmt: str = "mp4", model: str = ""):
     status = task["status"]
+    if status in TERMINAL:
+        record(task, name, model)
     if status == "SUCCEEDED":
         paths = []
         for i, url in enumerate(task["output"]):
@@ -173,7 +228,13 @@ def finish(task: dict, name: str, out_dir: pathlib.Path, fmt: str = "mp4"):
 def wait_task(tid: str, timeout_s: int = 1800) -> dict:
     t0 = time.time(); last = None
     while time.time() - t0 < timeout_s:
-        task = api("GET", f"/tasks/{tid}")
+        try:
+            task = api("GET", f"/tasks/{tid}")
+        except seedance.Transient as e:
+            # the task runs on their side whatever happens to this connection
+            print(f"  {time.time() - t0:6.0f}s  poll failed ({e}); still waiting")
+            time.sleep(POLL_S)
+            continue
         sig = (task["status"], task.get("progress"))
         if sig != last:
             print(f"  {time.time() - t0:6.0f}s  {task['status']}  progress={task.get('progress')}")
@@ -181,7 +242,7 @@ def wait_task(tid: str, timeout_s: int = 1800) -> dict:
         if task["status"] in TERMINAL:
             return task
         time.sleep(POLL_S)
-    die(f"timed out after {timeout_s}s waiting on {tid}")
+    die(f"timed out after {timeout_s}s waiting on {tid} — resume with: runway.py wait {tid}")
 
 
 def submit(path: str, body: dict, name: str, out_dir: pathlib.Path, dry: bool, est_credits, fmt: str = "mp4"):
@@ -196,9 +257,10 @@ def submit(path: str, body: dict, name: str, out_dir: pathlib.Path, dry: bool, e
         return
     created = api("POST", path, body)
     tid = created["id"]
-    st = load_state(); st["tasks"][tid] = {"name": name, "path": path, "t": time.time(), "out": str(out_dir), "fmt": fmt}; save_state(st)
+    model = body.get("model", "")
+    remember("tasks", tid, {"name": name, "path": path, "t": time.time(), "out": str(out_dir), "fmt": fmt, "model": model})
     print(f"task {tid} created; polling every {POLL_S}s")
-    finish(wait_task(tid), name, out_dir, fmt)
+    finish(wait_task(tid), name, out_dir, fmt, model)
 
 
 # ---------- commands ----------
@@ -278,14 +340,14 @@ def cmd_act_two(args):
 def cmd_status(args):
     task = api("GET", f"/tasks/{args.task_id}")
     print(json.dumps({k: v for k, v in task.items() if k != "output"}, indent=1))
-    if task["status"] == "SUCCEEDED":
+    if task["status"] in TERMINAL:
         st = load_state().get("tasks", {}).get(args.task_id, {})
-        finish(task, st.get("name", "task"), pathlib.Path(st.get("out", DEFAULT_OUT)), st.get("fmt", "mp4"))
+        finish(task, st.get("name", "task"), pathlib.Path(st.get("out", DEFAULT_OUT)), st.get("fmt", "mp4"), st.get("model", ""))
 
 
 def cmd_wait(args):
     st = load_state().get("tasks", {}).get(args.task_id, {})
-    finish(wait_task(args.task_id), st.get("name", "task"), pathlib.Path(st.get("out", DEFAULT_OUT)), st.get("fmt", "mp4"))
+    finish(wait_task(args.task_id), st.get("name", "task"), pathlib.Path(st.get("out", DEFAULT_OUT)), st.get("fmt", "mp4"), st.get("model", ""))
 
 
 def cmd_cancel(args):
@@ -331,7 +393,10 @@ def build_parser():
 
 def main():
     args = build_parser().parse_args()
-    args.func(args)
+    try:
+        args.func(args)
+    except seedance.Transient as e:
+        die(str(e))
 
 
 if __name__ == "__main__":
