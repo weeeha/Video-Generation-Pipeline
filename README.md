@@ -40,6 +40,8 @@ pipeline/
   spend-policy.json   which models may be used and when the resource pack expires; checked
                       before every create (see Spend policy)
   runway.py           Runway client (Aleph 2.0, Act-Two), see the Runway section
+  runway_seedance.py  Seedance 2 / 2.5 video to video through the Runway API (2.5 has an edit mode); blocks any clip with a gun
+  runway_gen45.py     Runway Gen-4.5 image to video (one still as the first frame; no video input)
   post/               post tools: phone-screen compositing, seamless loops (see post/README.md)
   promos/             per-promo manifests, guard, build and verify scripts
   prompts/            prompt files (sent verbatim — the whole file is the prompt)
