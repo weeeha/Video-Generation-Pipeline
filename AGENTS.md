@@ -21,11 +21,13 @@ and the `asset://` workaround).
 
 - **Never run a real generation without Nick's explicit go.** `--dry-run` is free and
   prints exactly what would be sent — use it to validate any command you construct.
-- Iterate on `--fast` at 720p. Full model at 1080p is for finals only.
-- Same seed + same inputs is deterministic, so a good `--fast` take can guide the final.
-- There is **no balance endpoint**. Balance is console-only:
-  <https://console.byteplus.com/finance> (BytePlus, region ap-southeast-1). Don't claim to
-  know the remaining balance — you can't.
+- **Spend the 2.5 pack only, never pay-as-you-go** (Nick, 2026-11-06). Use the default model
+  (2.5). `--model 2.0`, `--fast` and `--model mini` bill Nick's card. Iterate on 2.5 at 720p,
+  finals at 1080p. The pack expires 2026-11-10 23:59 UTC+8; status in knowledge/gotchas.md.
+- Same seed + same inputs is deterministic, so a good 720p take can guide the final.
+- There is **no balance endpoint**. Read the pack's remaining capacity in the console:
+  <https://console.byteplus.com/finance/resource-package> (BytePlus, region ap-southeast-1,
+  sign-in needed). Don't claim to know the remaining balance without reading it there.
 - `seedance.py` prints `usage.completion_tokens` after every success; ~109k for one 720p
   clip is the budgeting yardstick.
 
