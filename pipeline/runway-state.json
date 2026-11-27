@@ -1,0 +1,238 @@
+{
+ "tasks": {
+  "10d827d5-1f15-4810-9305-e991f6d934ae": {
+   "name": "r1-1-aleph-keyframes",
+   "path": "/video_to_video",
+   "t": 1793348215.368414,
+   "out": "/Users/nickv/ClaudeCode Projects/My Films/tests/real-footage/runs/r1-1",
+   "fmt": "mp4"
+  },
+  "2be88de6-11b3-4b3f-9222-123ef08cd3e5": {
+   "name": "r1-2-aleph-prompt",
+   "path": "/video_to_video",
+   "t": 1793348587.79235,
+   "out": "/Users/nickv/ClaudeCode Projects/My Films/tests/real-footage/runs/r1-2",
+   "fmt": "mp4"
+  },
+  "be433a8e-f9ef-455d-983f-3cb6bbe05a43": {
+   "name": "r1-3-aleph-drone",
+   "path": "/video_to_video",
+   "t": 1793348935.170311,
+   "out": "/Users/nickv/ClaudeCode Projects/My Films/tests/real-footage/runs/r1-3",
+   "fmt": "mp4"
+  },
+  "2bf6f471-75ca-492c-90e5-ca5d653d4beb": {
+   "name": "r1-5-aleph-settings",
+   "path": "/video_to_video",
+   "t": 1793349067.53636,
+   "out": "/Users/nickv/ClaudeCode Projects/My Films/tests/real-footage/runs/r1-5",
+   "fmt": "mp4"
+  },
+  "3cd5910c-d230-4769-a678-a32a1f00167d": {
+   "name": "r1-4-acttwo",
+   "path": "/character_performance",
+   "t": 1793349283.260291,
+   "out": "/Users/nickv/ClaudeCode Projects/My Films/tests/real-footage/runs/r1-4",
+   "fmt": "mp4"
+  },
+  "3bdd771c-83ae-4e2e-be88-6cda0e46140a": {
+   "name": "aleph-closewalk-gun",
+   "path": "/video_to_video",
+   "t": 1794803948.1807349,
+   "out": "/Users/nickv/ClaudeCode Projects/My Films/tests/real-footage/mocap-rgb/close-walk/realgun",
+   "fmt": "mp4"
+  },
+  "c0aef33b-e4fd-429d-a110-2e35a8c7f287": {
+   "name": "seedance-closewalk-gun-noref",
+   "path": "/video_to_video",
+   "t": 1794803980.061173,
+   "out": "/Users/nickv/ClaudeCode Projects/My Films/tests/real-footage/mocap-rgb/close-walk/realgun",
+   "fmt": "mp4"
+  },
+  "55c915b4-577e-4d93-8369-cd877422a5a1": {
+   "name": "seedance-closewalk-anton",
+   "path": "/video_to_video",
+   "t": 1794804025.312053,
+   "out": "/Users/nickv/ClaudeCode Projects/My Films/tests/real-footage/mocap-rgb/close-walk/scene3d",
+   "fmt": "mp4"
+  },
+  "96807357-5eb5-4c0b-b30a-1ffc7c02552e": {
+   "name": "seedance-closewalk-anton-neutral",
+   "path": "/video_to_video",
+   "t": 1794804053.0269032,
+   "out": "/Users/nickv/ClaudeCode Projects/My Films/tests/real-footage/mocap-rgb/close-walk/scene3d",
+   "fmt": "mp4"
+  },
+  "108d8f75-35b7-417d-a45d-1667fab1b945": {
+   "name": "sd25-closewalk-gun",
+   "path": "/video_to_video",
+   "t": 1794811595.720035,
+   "out": "/Users/nickv/ClaudeCode Projects/My Films/tests/real-footage/mocap-rgb/close-walk/realgun",
+   "fmt": "mp4"
+  },
+  "a7d6d8ef-6aae-4120-b8ec-e5b38b452f77": {
+   "name": "gen45-closewalk-gun",
+   "path": "/image_to_video",
+   "t": 1794848585.648142,
+   "out": "/Users/nickv/ClaudeCode Projects/My Films/tests/real-footage/mocap-rgb/close-walk/realgun/gen45",
+   "fmt": "mp4"
+  },
+  "1cb0d392-7f9a-475d-a122-fdfd47ad0aa9": {
+   "name": "aleph-closewalk-gun-arm",
+   "path": "/video_to_video",
+   "t": 1794980533.689249,
+   "out": "/Users/nickv/ClaudeCode Projects/My Films/tests/real-footage/mocap-rgb/close-walk/realgun",
+   "fmt": "mp4"
+  },
+  "8b6a558a-aeb3-4756-861b-512f9c3c9919": {
+   "name": "aleph-closewalk-gun-arm-decay",
+   "path": "/video_to_video",
+   "t": 1794980943.6709352,
+   "out": "/Users/nickv/ClaudeCode Projects/My Films/tests/real-footage/mocap-rgb/close-walk/realgun",
+   "fmt": "mp4"
+  },
+  "3fa0adfd-42e3-43dc-a84d-2bd4be003d88": {
+   "name": "wide",
+   "path": "/image_to_video",
+   "t": 1795149559.7660108,
+   "out": "/Users/nickv/ClaudeCode Projects/Unreal Engine Testing/renders/bake-off/A",
+   "fmt": "mp4"
+  },
+  "f36adb9a-e723-46e5-9b27-41c07a445fa3": {
+   "name": "low",
+   "path": "/image_to_video",
+   "t": 1795149757.469493,
+   "out": "/Users/nickv/ClaudeCode Projects/Unreal Engine Testing/renders/bake-off/A",
+   "fmt": "mp4"
+  },
+  "15bec1d0-65f3-4553-9ed5-a57981a132ea": {
+   "name": "cafe-aleph-01",
+   "path": "/video_to_video",
+   "t": 1795223680.6000488,
+   "out": "/Users/nickv/ClaudeCode Projects/Unreal Engine Testing/renders/aleph",
+   "fmt": "mp4"
+  }
+ },
+ "uploads": {
+  "/Users/nickv/ClaudeCode Projects/My Films/tests/real-footage/prep/sdr/walkinstatic-0-10s.mp4": {
+   "uri": "runway://eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcxMTAyODI4LCJ1cGxvYWRCdWNrZXQiOiJydW53YXktdXBsb2Fkcy1wcm9kIiwidXBsb2FkS2V5IjoiZXBoZW1lcmFsLXVwbG9hZHMvNzExMDI4MjgvOTk3ODVjODAtM2Y2ZS00OWY5LWFhYWUtMTAxYjc1YTlhMmRjL2ZpbGUubXA0IiwidHlwZSI6ImVwaGVtZXJhbCIsImNvbnRlbnRUeXBlIjoidmlkZW8vbXA0IiwiaWF0IjoxNzkzMzQ4MTkxLCJleHAiOjE3OTM0MzQ1OTEsImlzcyI6Imh0dHBzOi8vYXBpLmRldi5ydW53YXltbC5jb20ifQ.ZmaJgcmQHPfYUd2OJZKNezccKbenQSru2fjElp5Oa7w",
+   "t": 1793348207.240288
+  },
+  "/Users/nickv/ClaudeCode Projects/My Films/tests/real-footage/stills/look-lock/batch-2026-10-30/walkinstatic-empty/attempt-2/gen.png": {
+   "uri": "runway://eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcxMTAyODI4LCJ1cGxvYWRCdWNrZXQiOiJydW53YXktdXBsb2Fkcy1wcm9kIiwidXBsb2FkS2V5IjoiZXBoZW1lcmFsLXVwbG9hZHMvNzExMDI4MjgvOTkxN2Q1NjQtOTRjYi00MTk1LWI1NDgtNmI3YzczMWVlYzExL2ZpbGUucG5nIiwidHlwZSI6ImVwaGVtZXJhbCIsImNvbnRlbnRUeXBlIjoiaW1hZ2UvcG5nIiwiaWF0IjoxNzkzMzQ4MjA3LCJleHAiOjE3OTM0MzQ2MDcsImlzcyI6Imh0dHBzOi8vYXBpLmRldi5ydW53YXltbC5jb20ifQ.IDfgBqoCaxyZcN9zvjCu4OSvtcv1OmZWBg22L5aCeQI",
+   "t": 1793348211.03859
+  },
+  "/Users/nickv/ClaudeCode Projects/My Films/tests/real-footage/stills/look-lock/selected/wide-walkin-spider-guardian.png": {
+   "uri": "runway://eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcxMTAyODI4LCJ1cGxvYWRCdWNrZXQiOiJydW53YXktdXBsb2Fkcy1wcm9kIiwidXBsb2FkS2V5IjoiZXBoZW1lcmFsLXVwbG9hZHMvNzExMDI4MjgvMDllYTFkNWYtYzQ1MC00OGY2LTgwYjctNTc0OTE5Mjc4NzIwL2ZpbGUucG5nIiwidHlwZSI6ImVwaGVtZXJhbCIsImNvbnRlbnRUeXBlIjoiaW1hZ2UvcG5nIiwiaWF0IjoxNzkzMzQ4MjExLCJleHAiOjE3OTM0MzQ2MTEsImlzcyI6Imh0dHBzOi8vYXBpLmRldi5ydW53YXltbC5jb20ifQ.18I34Lng6ndgYuSaD2oaPm2epxmm_37eAXzgm3BkCdI",
+   "t": 1793348213.9075909
+  },
+  "/Users/nickv/ClaudeCode Projects/My Films/tests/real-footage/prep/sdr/drone-parallelwalk.mp4": {
+   "uri": "runway://eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcxMTAyODI4LCJ1cGxvYWRCdWNrZXQiOiJydW53YXktdXBsb2Fkcy1wcm9kIiwidXBsb2FkS2V5IjoiZXBoZW1lcmFsLXVwbG9hZHMvNzExMDI4MjgvYTAwNmFhMmYtYzg5Mi00ZjcxLWEwODUtYTg1ZDRkZTI4ZDBjL2ZpbGUubXA0IiwidHlwZSI6ImVwaGVtZXJhbCIsImNvbnRlbnRUeXBlIjoidmlkZW8vbXA0IiwiaWF0IjoxNzkzMzQ4ODY3LCJleHAiOjE3OTM0MzUyNjcsImlzcyI6Imh0dHBzOi8vYXBpLmRldi5ydW53YXltbC5jb20ifQ.AbvC3M953ZbEDdMUvEEOzGRIWaNWqaNKQ4frvxrop5c",
+   "t": 1793348933.8488839
+  },
+  "/Users/nickv/ClaudeCode Projects/My Films/tests/real-footage/prep/sdr/settings-forward.mp4": {
+   "uri": "runway://eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcxMTAyODI4LCJ1cGxvYWRCdWNrZXQiOiJydW53YXktdXBsb2Fkcy1wcm9kIiwidXBsb2FkS2V5IjoiZXBoZW1lcmFsLXVwbG9hZHMvNzExMDI4MjgvOWE5MzJiNTgtZjE1NS00OTE1LTkyZWEtNDA0MmE5YjE5NGFlL2ZpbGUubXA0IiwidHlwZSI6ImVwaGVtZXJhbCIsImNvbnRlbnRUeXBlIjoidmlkZW8vbXA0IiwiaWF0IjoxNzkzMzQ5MDM1LCJleHAiOjE3OTM0MzU0MzUsImlzcyI6Imh0dHBzOi8vYXBpLmRldi5ydW53YXltbC5jb20ifQ.RD7Mc0HxXHN1MABPtMLYUCYKSvXk3t3lNbaVE7uWLgQ",
+   "t": 1793349059.7662961
+  },
+  "/Users/nickv/ClaudeCode Projects/My Films/tests/real-footage/stills/look-lock/batch-2026-10-30/settings-forward/attempt-2/gen.png": {
+   "uri": "runway://eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcxMTAyODI4LCJ1cGxvYWRCdWNrZXQiOiJydW53YXktdXBsb2Fkcy1wcm9kIiwidXBsb2FkS2V5IjoiZXBoZW1lcmFsLXVwbG9hZHMvNzExMDI4MjgvYzI5MGVmYjUtYTNkZC00MDgzLTllOGItN2ViZjY1ZmU5ZGMwL2ZpbGUucG5nIiwidHlwZSI6ImVwaGVtZXJhbCIsImNvbnRlbnRUeXBlIjoiaW1hZ2UvcG5nIiwiaWF0IjoxNzkzMzQ5MDU5LCJleHAiOjE3OTM0MzU0NTksImlzcyI6Imh0dHBzOi8vYXBpLmRldi5ydW53YXltbC5jb20ifQ.qJwgTqI6G8fK1PklafIcHn1TSGgRrmsE2UGIEm_Ww80",
+   "t": 1793349065.0428102
+  },
+  "/Users/nickv/ClaudeCode Projects/My Films/tests/real-footage/stills/look-lock/03b-close-face-restored.png": {
+   "uri": "runway://eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcxMTAyODI4LCJ1cGxvYWRCdWNrZXQiOiJydW53YXktdXBsb2Fkcy1wcm9kIiwidXBsb2FkS2V5IjoiZXBoZW1lcmFsLXVwbG9hZHMvNzExMDI4MjgvMmEyNzdhM2ItZGQxYy00OGQzLTlmZDYtZTMxNjcwMzI1MGEyL2ZpbGUucG5nIiwidHlwZSI6ImVwaGVtZXJhbCIsImNvbnRlbnRUeXBlIjoiaW1hZ2UvcG5nIiwiaWF0IjoxNzkzMzQ5MjM3LCJleHAiOjE3OTM0MzU2MzcsImlzcyI6Imh0dHBzOi8vYXBpLmRldi5ydW53YXltbC5jb20ifQ.Z1iako-aeLsaCX3HSaBo-vvBHG6X3j7JpR0oM-j6rKs",
+   "t": 1793349245.741205
+  },
+  "/Users/nickv/ClaudeCode Projects/My Films/tests/real-footage/prep/sdr/home-close-walk.mp4": {
+   "uri": "runway://eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcxMTAyODI4LCJ1cGxvYWRCdWNrZXQiOiJydW53YXktdXBsb2Fkcy1wcm9kIiwidXBsb2FkS2V5IjoiZXBoZW1lcmFsLXVwbG9hZHMvNzExMDI4MjgvNDZmOTVkNTEtMDY2Yy00M2E2LWIxOWEtMGRmNDk2MjQxNDRhL2ZpbGUubXA0IiwidHlwZSI6ImVwaGVtZXJhbCIsImNvbnRlbnRUeXBlIjoidmlkZW8vbXA0IiwiaWF0IjoxNzkzMzQ5MjQ2LCJleHAiOjE3OTM0MzU2NDYsImlzcyI6Imh0dHBzOi8vYXBpLmRldi5ydW53YXltbC5jb20ifQ.NHQlqg9SkwUd7tzTLQfA8uF6ohvAw2WE_KJYjIXA0Wg",
+   "t": 1793349282.243513
+  },
+  "/Users/nickv/ClaudeCode Projects/My Films/refs/scene-15/characters/_robot-humanoid-b.png": {
+   "uri": "runway://eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcxMTAyODI4LCJ1cGxvYWRCdWNrZXQiOiJydW53YXktdXBsb2Fkcy1wcm9kIiwidXBsb2FkS2V5IjoiZXBoZW1lcmFsLXVwbG9hZHMvNzExMDI4MjgvOWZlOGZhZmEtMWExNi00MDJlLWEyOTAtMDI0NDhjODdjY2VmL2ZpbGUucG5nIiwidHlwZSI6ImVwaGVtZXJhbCIsImNvbnRlbnRUeXBlIjoiaW1hZ2UvcG5nIiwiaWF0IjoxNzk0MTg3NjM3LCJleHAiOjE3OTQyNzQwMzcsImlzcyI6Imh0dHBzOi8vYXBpLmRldi5ydW53YXltbC5jb20ifQ.kyg9PuiEc0wAjP9bdXb2eckpmxikEEWIzo_DeRHwuA8",
+   "t": 1794187639.88764
+  },
+  "/Users/nickv/ClaudeCode Projects/My Films/refs/scene-15/characters/robot-humanoid-01-full-body.png": {
+   "uri": "runway://eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcxMTAyODI4LCJ1cGxvYWRCdWNrZXQiOiJydW53YXktdXBsb2Fkcy1wcm9kIiwidXBsb2FkS2V5IjoiZXBoZW1lcmFsLXVwbG9hZHMvNzExMDI4MjgvMmQ5NGQxYjAtMDMyOC00YjYwLTgyMWUtMGY3OTlhNDRiNjAzL2ZpbGUucG5nIiwidHlwZSI6ImVwaGVtZXJhbCIsImNvbnRlbnRUeXBlIjoiaW1hZ2UvcG5nIiwiaWF0IjoxNzk0MTg3NzMwLCJleHAiOjE3OTQyNzQxMzAsImlzcyI6Imh0dHBzOi8vYXBpLmRldi5ydW53YXltbC5jb20ifQ.1910s61hY1tcYEY2wFcBhm39qeeaXdXeyoIiNY6pg7M",
+   "t": 1794187736.4775722
+  },
+  "/Users/nickv/ClaudeCode Projects/My Films/refs/scene-15/location/cafe-room-wide.png": {
+   "uri": "runway://eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcxMTAyODI4LCJ1cGxvYWRCdWNrZXQiOiJydW53YXktdXBsb2Fkcy1wcm9kIiwidXBsb2FkS2V5IjoiZXBoZW1lcmFsLXVwbG9hZHMvNzExMDI4MjgvMzYyM2VhOGQtZGVkZC00MGVlLWIwZDQtMTllYzk0ZTliZjU2L2ZpbGUucG5nIiwidHlwZSI6ImVwaGVtZXJhbCIsImNvbnRlbnRUeXBlIjoiaW1hZ2UvcG5nIiwiaWF0IjoxNzk1MTQ5NTU2LCJleHAiOjE3OTUyMzU5NTYsImlzcyI6Imh0dHBzOi8vYXBpLmRldi5ydW53YXltbC5jb20ifQ.BOoi-uBK7pbLF2jvPTLhhTiGh1K1PPtHNTjcXBxm400",
+   "t": 1795149558.956589
+  },
+  "/Users/nickv/ClaudeCode Projects/My Films/refs/scene-15/objects/_battery-cad-preview.png": {
+   "uri": "runway://eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcxMTAyODI4LCJ1cGxvYWRCdWNrZXQiOiJydW53YXktdXBsb2Fkcy1wcm9kIiwidXBsb2FkS2V5IjoiZXBoZW1lcmFsLXVwbG9hZHMvNzExMDI4MjgvNDdhMzczMzEtMzIwNi00NzMwLWFiY2MtMzJlZWY3Y2I1MzVjL2ZpbGUucG5nIiwidHlwZSI6ImVwaGVtZXJhbCIsImNvbnRlbnRUeXBlIjoiaW1hZ2UvcG5nIiwiaWF0IjoxNzk0MTg3NzYzLCJleHAiOjE3OTQyNzQxNjMsImlzcyI6Imh0dHBzOi8vYXBpLmRldi5ydW53YXltbC5jb20ifQ.4Pto3FL1ZXJz_Q3sWnRxAQBzG2R-QSC016VpeLgVxMo",
+   "t": 1794187763.909646
+  },
+  "/Users/nickv/ClaudeCode Projects/My Films/refs/scene-15/characters/reclaimer-visor-walk.png": {
+   "uri": "runway://eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcxMTAyODI4LCJ1cGxvYWRCdWNrZXQiOiJydW53YXktdXBsb2Fkcy1wcm9kIiwidXBsb2FkS2V5IjoiZXBoZW1lcmFsLXVwbG9hZHMvNzExMDI4MjgvNWRmOWJkMjEtZDMyYy00MWQyLWE1ZGUtZWNmNWJkMDBkZDk5L2ZpbGUucG5nIiwidHlwZSI6ImVwaGVtZXJhbCIsImNvbnRlbnRUeXBlIjoiaW1hZ2UvcG5nIiwiaWF0IjoxNzk0MTg3NzY0LCJleHAiOjE3OTQyNzQxNjQsImlzcyI6Imh0dHBzOi8vYXBpLmRldi5ydW53YXltbC5jb20ifQ.X4XY-WEWznOOgusXpqZtJMQj4C6PUDomKqRmf2Khecw",
+   "t": 1794187767.188162
+  },
+  "/Users/nickv/ClaudeCode Projects/My Films/renders/scene-15/plan/frames/sh01-approach-blocks.png": {
+   "uri": "runway://eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcxMTAyODI4LCJ1cGxvYWRCdWNrZXQiOiJydW53YXktdXBsb2Fkcy1wcm9kIiwidXBsb2FkS2V5IjoiZXBoZW1lcmFsLXVwbG9hZHMvNzExMDI4MjgvOWNkYjYzNjYtYjFiOC00NTQ2LWJjNzYtNTQ3MGZkMTI4YTQ1L2ZpbGUucG5nIiwidHlwZSI6ImVwaGVtZXJhbCIsImNvbnRlbnRUeXBlIjoiaW1hZ2UvcG5nIiwiaWF0IjoxNzk0MTg3NzY3LCJleHAiOjE3OTQyNzQxNjcsImlzcyI6Imh0dHBzOi8vYXBpLmRldi5ydW53YXltbC5jb20ifQ.NxNcPsVcqbnWoE6GHDDhz2NhucVXTRI723C2kkLXrVQ",
+   "t": 1794187768.485588
+  },
+  "/Users/nickv/ClaudeCode Projects/My Films/renders/scene-15/plan/frames/sh02-welcome-blocks.png": {
+   "uri": "runway://eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcxMTAyODI4LCJ1cGxvYWRCdWNrZXQiOiJydW53YXktdXBsb2Fkcy1wcm9kIiwidXBsb2FkS2V5IjoiZXBoZW1lcmFsLXVwbG9hZHMvNzExMDI4MjgvMWRhYTU5YmYtMTNjYy00ODQyLWI0YTktM2FhZmUzOTZmMzE3L2ZpbGUucG5nIiwidHlwZSI6ImVwaGVtZXJhbCIsImNvbnRlbnRUeXBlIjoiaW1hZ2UvcG5nIiwiaWF0IjoxNzk0MTg3ODA1LCJleHAiOjE3OTQyNzQyMDUsImlzcyI6Imh0dHBzOi8vYXBpLmRldi5ydW53YXltbC5jb20ifQ.VaACxXcBNt5giPmotEyZeHGwpiXxpvlUs2-28hXEBJI",
+   "t": 1794187806.333718
+  },
+  "/Users/nickv/ClaudeCode Projects/My Films/renders/scene-15/plan/frames/sh03-room-blocks.png": {
+   "uri": "runway://eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcxMTAyODI4LCJ1cGxvYWRCdWNrZXQiOiJydW53YXktdXBsb2Fkcy1wcm9kIiwidXBsb2FkS2V5IjoiZXBoZW1lcmFsLXVwbG9hZHMvNzExMDI4MjgvN2NjNDViMjctMzU5NS00ZjMxLWI0YmEtMGI3MDlhMzBhNzliL2ZpbGUucG5nIiwidHlwZSI6ImVwaGVtZXJhbCIsImNvbnRlbnRUeXBlIjoiaW1hZ2UvcG5nIiwiaWF0IjoxNzk0MTg3ODQzLCJleHAiOjE3OTQyNzQyNDMsImlzcyI6Imh0dHBzOi8vYXBpLmRldi5ydW53YXltbC5jb20ifQ.5zJGCtMPKi4bXikIOdSWJ3_P1kk5CaO8VVBqpQ-sE_4",
+   "t": 1794187844.561504
+  },
+  "/Users/nickv/ClaudeCode Projects/My Films/renders/scene-15/plan/frames/sh04-pour-blocks.png": {
+   "uri": "runway://eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcxMTAyODI4LCJ1cGxvYWRCdWNrZXQiOiJydW53YXktdXBsb2Fkcy1wcm9kIiwidXBsb2FkS2V5IjoiZXBoZW1lcmFsLXVwbG9hZHMvNzExMDI4MjgvOTMzM2YwMDctNzYxMC00NmJkLWFkZTEtNmU1Y2FkZmQ1NmEzL2ZpbGUucG5nIiwidHlwZSI6ImVwaGVtZXJhbCIsImNvbnRlbnRUeXBlIjoiaW1hZ2UvcG5nIiwiaWF0IjoxNzk0MTg3ODc2LCJleHAiOjE3OTQyNzQyNzYsImlzcyI6Imh0dHBzOi8vYXBpLmRldi5ydW53YXltbC5jb20ifQ.eBWVZ4hBzyrRqNoW-r3ci3hIdrAMQOm9AljShuQbAmY",
+   "t": 1794187877.260268
+  },
+  "/Users/nickv/ClaudeCode Projects/My Films/renders/scene-15/plan/frames/sh05-cable-blocks.png": {
+   "uri": "runway://eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcxMTAyODI4LCJ1cGxvYWRCdWNrZXQiOiJydW53YXktdXBsb2Fkcy1wcm9kIiwidXBsb2FkS2V5IjoiZXBoZW1lcmFsLXVwbG9hZHMvNzExMDI4MjgvNjFiOWVlMzgtY2NiYi00ZGJlLTk0MjEtN2Q1MjRjMjFkNjU0L2ZpbGUucG5nIiwidHlwZSI6ImVwaGVtZXJhbCIsImNvbnRlbnRUeXBlIjoiaW1hZ2UvcG5nIiwiaWF0IjoxNzk0MTg3OTAzLCJleHAiOjE3OTQyNzQzMDMsImlzcyI6Imh0dHBzOi8vYXBpLmRldi5ydW53YXltbC5jb20ifQ.HyTVibDBPbFXeyLH7GmNNxD4f4SHgcjI_fvzQdClCWw",
+   "t": 1794187905.0465899
+  },
+  "/Users/nickv/ClaudeCode Projects/My Films/renders/scene-15/plan/frames/sh06-trip-blocks.png": {
+   "uri": "runway://eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcxMTAyODI4LCJ1cGxvYWRCdWNrZXQiOiJydW53YXktdXBsb2Fkcy1wcm9kIiwidXBsb2FkS2V5IjoiZXBoZW1lcmFsLXVwbG9hZHMvNzExMDI4MjgvZGNkOTYwOTAtOWViYi00YWY0LTg3NzktMmRiNGE1ZTQ4MmFkL2ZpbGUucG5nIiwidHlwZSI6ImVwaGVtZXJhbCIsImNvbnRlbnRUeXBlIjoiaW1hZ2UvcG5nIiwiaWF0IjoxNzk0MTg3OTQxLCJleHAiOjE3OTQyNzQzNDEsImlzcyI6Imh0dHBzOi8vYXBpLmRldi5ydW53YXltbC5jb20ifQ.6vsyyurB_2-wmLVl7Zz0DqSKmFRBUtaDhD5P-N2rTSU",
+   "t": 1794187942.5725281
+  },
+  "/Users/nickv/ClaudeCode Projects/My Films/renders/scene-15/plan/frames/sh07-battery-blocks.png": {
+   "uri": "runway://eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcxMTAyODI4LCJ1cGxvYWRCdWNrZXQiOiJydW53YXktdXBsb2Fkcy1wcm9kIiwidXBsb2FkS2V5IjoiZXBoZW1lcmFsLXVwbG9hZHMvNzExMDI4MjgvZTJhMjY4OWUtMDY5Ni00MGE5LTkzMjgtYzllYTVkOGRlNWViL2ZpbGUucG5nIiwidHlwZSI6ImVwaGVtZXJhbCIsImNvbnRlbnRUeXBlIjoiaW1hZ2UvcG5nIiwiaWF0IjoxNzk0MTg3OTcwLCJleHAiOjE3OTQyNzQzNzAsImlzcyI6Imh0dHBzOi8vYXBpLmRldi5ydW53YXltbC5jb20ifQ.12OCiI1WA6N1pCs28oXgZ6l5Mlpa7XmBOFN7zOxPMhI",
+   "t": 1794187972.025644
+  },
+  "/Users/nickv/ClaudeCode Projects/My Films/renders/scene-15/plan/frames/sh08-handoff-blocks.png": {
+   "uri": "runway://eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcxMTAyODI4LCJ1cGxvYWRCdWNrZXQiOiJydW53YXktdXBsb2Fkcy1wcm9kIiwidXBsb2FkS2V5IjoiZXBoZW1lcmFsLXVwbG9hZHMvNzExMDI4MjgvNGVhOThiMWMtMzU2Yy00MGUxLWI3MzMtYzgyY2IzZGY0YWQ2L2ZpbGUucG5nIiwidHlwZSI6ImVwaGVtZXJhbCIsImNvbnRlbnRUeXBlIjoiaW1hZ2UvcG5nIiwiaWF0IjoxNzk0MTg4MDAyLCJleHAiOjE3OTQyNzQ0MDIsImlzcyI6Imh0dHBzOi8vYXBpLmRldi5ydW53YXltbC5jb20ifQ.09_NnZh1kziSGGv2fHlJ4qy339zSFqbpMLT_VNSCurk",
+   "t": 1794188003.6939678
+  },
+  "/Users/nickv/ClaudeCode Projects/My Films/refs/scene-15/location/storefront-exterior.png": {
+   "uri": "runway://eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcxMTAyODI4LCJ1cGxvYWRCdWNrZXQiOiJydW53YXktdXBsb2Fkcy1wcm9kIiwidXBsb2FkS2V5IjoiZXBoZW1lcmFsLXVwbG9hZHMvNzExMDI4MjgvYzc3MDE4NGItNzkzYy00ODIzLWIxMWQtMGUzYzdiNTkyN2EzL2ZpbGUucG5nIiwidHlwZSI6ImVwaGVtZXJhbCIsImNvbnRlbnRUeXBlIjoiaW1hZ2UvcG5nIiwiaWF0IjoxNzk0MTg4MTQxLCJleHAiOjE3OTQyNzQ1NDEsImlzcyI6Imh0dHBzOi8vYXBpLmRldi5ydW53YXltbC5jb20ifQ.c9BIGheiXhGcBT_eiWNCN6Qu7W-FoY4w1ZytFvl0SVU",
+   "t": 1794188143.357093
+  },
+  "/Users/nickv/ClaudeCode Projects/My Films/refs/scene-15/frames/sh07-start.png": {
+   "uri": "runway://eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcxMTAyODI4LCJ1cGxvYWRCdWNrZXQiOiJydW53YXktdXBsb2Fkcy1wcm9kIiwidXBsb2FkS2V5IjoiZXBoZW1lcmFsLXVwbG9hZHMvNzExMDI4MjgvM2JkODdkMDgtMzhmZC00YTAyLTkwZmYtNzFlOWNmNDgxOGUwL2ZpbGUucG5nIiwidHlwZSI6ImVwaGVtZXJhbCIsImNvbnRlbnRUeXBlIjoiaW1hZ2UvcG5nIiwiaWF0IjoxNzk0MTg4MTc0LCJleHAiOjE3OTQyNzQ1NzQsImlzcyI6Imh0dHBzOi8vYXBpLmRldi5ydW53YXltbC5jb20ifQ.qBybEhfe-oqi4djVOtoIkWtuMYaDe0a-NZqFta2PVzM",
+   "t": 1794188176.908365
+  },
+  "/Users/nickv/ClaudeCode Projects/My Films/refs/scene-15/frames/sh03-start.png": {
+   "uri": "runway://eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcxMTAyODI4LCJ1cGxvYWRCdWNrZXQiOiJydW53YXktdXBsb2Fkcy1wcm9kIiwidXBsb2FkS2V5IjoiZXBoZW1lcmFsLXVwbG9hZHMvNzExMDI4MjgvZDcxMWM1MmItNDgyMi00OTI3LWJkOWEtMTA3ZDU1ODE0NzYxL2ZpbGUucG5nIiwidHlwZSI6ImVwaGVtZXJhbCIsImNvbnRlbnRUeXBlIjoiaW1hZ2UvcG5nIiwiaWF0IjoxNzk0MTg4MjQ1LCJleHAiOjE3OTQyNzQ2NDUsImlzcyI6Imh0dHBzOi8vYXBpLmRldi5ydW53YXltbC5jb20ifQ.BCu-0PT17TrzKSXy_10PXWkYyOjX6dBDO9UnMM4UKK0",
+   "t": 1794188249.499965
+  },
+  "/Users/nickv/ClaudeCode Projects/My Films/tests/real-footage/mocap-rgb/close-walk/realgun/comp-gun-6s-720p.mp4": {
+   "uri": "runway://eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcxMTAyODI4LCJ1cGxvYWRCdWNrZXQiOiJydW53YXktdXBsb2Fkcy1wcm9kIiwidXBsb2FkS2V5IjoiZXBoZW1lcmFsLXVwbG9hZHMvNzExMDI4MjgvMzBiNThjZWMtMjQzNi00MTk4LWE4NjMtYTQ4ZWZkNTRlYzNiL2ZpbGUubXA0IiwidHlwZSI6ImVwaGVtZXJhbCIsImNvbnRlbnRUeXBlIjoidmlkZW8vbXA0IiwiaWF0IjoxNzk0ODAzOTM3LCJleHAiOjE3OTQ4OTAzMzcsImlzcyI6Imh0dHBzOi8vYXBpLmRldi5ydW53YXltbC5jb20ifQ.c2os4qzqtHAMiyvrzP98OYHkujhdD1UGz6czRbxGtFs",
+   "t": 1794803947.2031202
+  },
+  "/Users/nickv/ClaudeCode Projects/My Films/tests/real-footage/mocap-rgb/close-walk/scene3d/anton-gun-over-room-6s-720p.mp4": {
+   "uri": "runway://eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcxMTAyODI4LCJ1cGxvYWRCdWNrZXQiOiJydW53YXktdXBsb2Fkcy1wcm9kIiwidXBsb2FkS2V5IjoiZXBoZW1lcmFsLXVwbG9hZHMvNzExMDI4MjgvZGQ2NGNmNDYtNDI2MS00NjBlLWJiNGMtMDYxMmM4M2FkMTNkL2ZpbGUubXA0IiwidHlwZSI6ImVwaGVtZXJhbCIsImNvbnRlbnRUeXBlIjoidmlkZW8vbXA0IiwiaWF0IjoxNzk0ODA0MDIzLCJleHAiOjE3OTQ4OTA0MjMsImlzcyI6Imh0dHBzOi8vYXBpLmRldi5ydW53YXltbC5jb20ifQ.R4o7FGT-y8q6bek497W47PAefwSCvUihzjooWtWgMN4",
+   "t": 1794804024.5426052
+  },
+  "/Users/nickv/ClaudeCode Projects/My Films/tests/real-footage/mocap-rgb/close-walk/realgun/gen45/first.jpg": {
+   "uri": "runway://eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcxMTAyODI4LCJ1cGxvYWRCdWNrZXQiOiJydW53YXktdXBsb2Fkcy1wcm9kIiwidXBsb2FkS2V5IjoiZXBoZW1lcmFsLXVwbG9hZHMvNzExMDI4MjgvMTFlODk3MTMtNzFjZi00ZWJmLTgzZjItMjRmYmMwYjJhMTE0L2ZpbGUuanBnIiwidHlwZSI6ImVwaGVtZXJhbCIsImNvbnRlbnRUeXBlIjoiaW1hZ2UvanBlZyIsImlhdCI6MTc5NDg0ODU4NCwiZXhwIjoxNzk0OTM0OTg0LCJpc3MiOiJodHRwczovL2FwaS5kZXYucnVud2F5bWwuY29tIn0.Ynjov9Met9n95-fLofyvGHANWGf2gRLFT_etC7qPfQQ",
+   "t": 1794848585.0160792
+  },
+  "/Users/nickv/ClaudeCode Projects/My Films/tests/real-footage/mocap-rgb/close-walk/realgun/comp-gun-arm-6s-720p.mp4": {
+   "uri": "runway://eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcxMTAyODI4LCJ1cGxvYWRCdWNrZXQiOiJydW53YXktdXBsb2Fkcy1wcm9kIiwidXBsb2FkS2V5IjoiZXBoZW1lcmFsLXVwbG9hZHMvNzExMDI4MjgvZjIxN2UxODYtZWQ2OS00N2QwLTg1MjgtMmU1ZDdlMDNiMWYwL2ZpbGUubXA0IiwidHlwZSI6ImVwaGVtZXJhbCIsImNvbnRlbnRUeXBlIjoidmlkZW8vbXA0IiwiaWF0IjoxNzk0OTgwNTI3LCJleHAiOjE3OTUwNjY5MjcsImlzcyI6Imh0dHBzOi8vYXBpLmRldi5ydW53YXltbC5jb20ifQ.EzvlWH8qgAnuoLuG8sxI5fhjThDVazMyqCSb-7jlKi4",
+   "t": 1794980532.675652
+  },
+  "/Users/nickv/ClaudeCode Projects/Unreal Engine Testing/renders/bake-off/A/low-start.png": {
+   "uri": "runway://eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcxMTAyODI4LCJ1cGxvYWRCdWNrZXQiOiJydW53YXktdXBsb2Fkcy1wcm9kIiwidXBsb2FkS2V5IjoiZXBoZW1lcmFsLXVwbG9hZHMvNzExMDI4MjgvNWQ5MWM5YjEtODdhZC00ZDRiLTk3MTgtODRhZDU4MzVlMjdjL2ZpbGUucG5nIiwidHlwZSI6ImVwaGVtZXJhbCIsImNvbnRlbnRUeXBlIjoiaW1hZ2UvcG5nIiwiaWF0IjoxNzk1MTQ5NzU1LCJleHAiOjE3OTUyMzYxNTUsImlzcyI6Imh0dHBzOi8vYXBpLmRldi5ydW53YXltbC5jb20ifQ.ZGbZUmpiyQQGrChXquIrCV1zK1XRMPMP30SNgBxVuS4",
+   "t": 1795149756.881121
+  },
+  "/Users/nickv/ClaudeCode Projects/Unreal Engine Testing/renders/aleph/unreal-dolly.mp4": {
+   "uri": "runway://eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcxMTAyODI4LCJ1cGxvYWRCdWNrZXQiOiJydW53YXktdXBsb2Fkcy1wcm9kIiwidXBsb2FkS2V5IjoiZXBoZW1lcmFsLXVwbG9hZHMvNzExMDI4MjgvODYzNTg3NGQtOWE3NS00MDkwLWI5ZTItNzhiMTQwNGQ1ZmVlL2ZpbGUubXA0IiwidHlwZSI6ImVwaGVtZXJhbCIsImNvbnRlbnRUeXBlIjoidmlkZW8vbXA0IiwiaWF0IjoxNzk1MjIzNjc0LCJleHAiOjE3OTUzMTAwNzQsImlzcyI6Imh0dHBzOi8vYXBpLmRldi5ydW53YXltbC5jb20ifQ.heGcQX6xIFS9eEbRv9Ic1on1gYhEr8w8z2LWBSIq4tA",
+   "t": 1795223679.70795
+  }
+ }
+}
